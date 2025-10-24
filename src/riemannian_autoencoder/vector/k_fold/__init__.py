@@ -3,48 +3,18 @@ import torch
 from src.riemannian_autoencoder.vector import VectorRiemannianAutoencoder
 
 class KfoldVectorRiemannianAutoencoder(VectorRiemannianAutoencoder):
-    def __init__(self, vector_euclidean, base_point, tangent_basis, K=5, ONB=True):
-        super().__init__(vector_euclidean)
-        """
-        K-fold Riemannian autoencoder for vector data.
-        :param vector_euclidean: VectorEuclidean object
-        :param base_point: d Tensor
-        :param tangent_basis: r x d Tensor
-        """
-        self.base_point = base_point
-        self.tangent_basis = tangent_basis
-        self.onb = ONB
+    def __init__(self, vector_euclidean, base_point, tangent_basis, K=5, step_size=0.5, ONB=True):
+        super().__init__(vector_euclidean,  base_point, tangent_basis, ONB=ONB)
         self.K = K
+        self.step_size = step_size
 
-    def encode(self, x):
+    def project_on_manifold(self, x):
         """
-        Encode data point x onto the tangent space at the base point.
-        :param x: N x d Tensor
-        :return: N x r Tensor of encoded points
+        :param x: N x d tensor
+        :return : N x d tensor
         """
-        proj_x = self.project_on_manifold(x)
-        log_base_point_x = self.manifold.log(self.base_point[None,None], proj_x[None])[0,0]  # N x d
-        encoded = torch.einsum('nd,rd->nr', log_base_point_x, self.tangent_basis)  # N x r
-        return encoded
+        y = self.base_point.clone()[None].repeat(x.shape[0],1)  # N x d
+        for _ in range(self.K):
+            y = self.manifold.exp(y, self.project_on_tangent_space(y, self.step_size * (x - y)[:,None]))[:,0]  # N x d
+        return y
     
-    def decode(self, z):
-        """
-        Decode point z from the tangent space at the base point back to the manifold.
-        :param z: N x r Tensor of encoded points
-        :return: N x d Tensor of decoded points
-        """
-        if not self.onb:
-            g_mat = torch.einsum('rd,sd->rs', self.tangent_basis, self.tangent_basis)  # r x r
-            # use torch.lingalg.solve for numerical stability
-            z = torch.linalg.solve(g_mat[None], z)  # N x r
-        
-        log_base_point_x = torch.einsum('nr,rd->nd', z, self.tangent_basis)  # N x d
-        decoded = self.manifold.exp(self.base_point[None], log_base_point_x[None])[0]  # N x d
-        return decoded
-    
-    def project_on_manifold(self, x): # TODO: overwrite for this class
-        """
-        :param x: N x [Epoint] tensor
-        :return : N x [Epoint] tensor
-        """
-        return None
