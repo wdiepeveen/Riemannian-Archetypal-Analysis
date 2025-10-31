@@ -1,11 +1,20 @@
 import torch
+import torch.nn as nn
 
-class RiemannianAutoencoder:
+class RiemannianAutoencoder(nn.Module):
     def __init__(self, euclidean, base_point, r):
+        super().__init__()
         self.manifold = euclidean
         self.d = self.manifold.d
         self.base_point = base_point
         self.r = r
+
+    def forward(self, x):
+        """
+        :param x: N x [Epoint] tensor
+        :return : N x [Epoint] tensor
+        """
+        return self.project_on_manifold(x)
 
     def encode(self, x):
         """

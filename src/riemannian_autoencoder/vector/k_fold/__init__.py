@@ -1,5 +1,3 @@
-import torch
-
 from src.riemannian_autoencoder.vector import VectorRiemannianAutoencoder
 
 class KfoldVectorRiemannianAutoencoder(VectorRiemannianAutoencoder):
