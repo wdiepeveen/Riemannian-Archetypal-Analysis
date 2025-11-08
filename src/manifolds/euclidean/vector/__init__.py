@@ -1,5 +1,3 @@
-import torch
-
 from src.manifolds.euclidean import Euclidean
 
 class VectorEuclidean(Euclidean):
