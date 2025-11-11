@@ -23,7 +23,7 @@ class PoincareVectorDiffeomorphism(VectorDiffeomorphism):
         :param y: N x d
         :return: N x d
         """
-        return self.manifold.log(torch.zeros_like(y), y.unsqueeze(1)).squeeze(1)
+        return self.manifold.log(torch.zeros_like(y).unsqueeze(1), y.unsqueeze(1)).squeeze(1).squeeze(1)
 
     def differential_forward(self, x, X):
         """
