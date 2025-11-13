@@ -12,3 +12,11 @@ class l2TangentSpacePCAVectorSolver(l2PGAVectorSolver):
     def get_Xi(self, rank):
         assert rank > 0 and rank <= min(self.d, self.N)
         return torch.einsum("Nk,k,dk->Nd", self.U[:,0:rank], self.Sigma[0:rank], self.V[:,0:rank])
+    
+    def get_embedding(self, rank):
+        assert rank > 0 and rank <= min(self.d, self.N)
+        return self.U[:,0:rank] @ torch.diag(self.Sigma[0:rank])
+    
+    def get_tangent_basis(self, rank):
+        assert rank > 0 and rank <= min(self.d, self.N)
+        return self.V[:,0:rank].t()

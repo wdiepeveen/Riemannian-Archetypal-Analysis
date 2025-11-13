@@ -44,3 +44,13 @@ class l2PGASolver(DimensionReductionSolver):
         raise NotImplementedError(
             "Subclasses should implement this"
         )
+    
+    def get_embedding(self, rank):
+        raise NotImplementedError(
+            "Subclasses should implement this"
+        )
+    
+    def get_tangent_basis(self, rank):
+        raise NotImplementedError(
+            "Subclasses should implement this"
+        )

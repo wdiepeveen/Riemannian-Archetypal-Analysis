@@ -23,7 +23,7 @@ class RiemannianAutoencoder(nn.Module):
         """
         proj_x = self.project_on_manifold(x)  # N x [Epoint]
         log_base_point_x = self.manifold.log(self.base_point[None,None], proj_x[None])[0,0]  # N x [Evector]
-        encoded = self.tangent_vector_to_coords(self.base_point[None], log_base_point_x[None])[0]  # N x r
+        encoded = self.tangent_vector_to_coords(log_base_point_x[None])[0]  # N x r
         return encoded
 
     def decode(self, V):
@@ -31,7 +31,7 @@ class RiemannianAutoencoder(nn.Module):
         :param V: N x r tensor
         :return : N x [Epoint] tensor
         """
-        log_base_point_x = self.coords_to_tangent_vector(self.base_point[None], V[None])[0]  # N x [Evector]
+        log_base_point_x = self.coords_to_tangent_vector(V[None])[0]  # N x [Evector]
         decoded = self.manifold.exp(self.base_point[None], log_base_point_x[None])[0]  # N x d
         return decoded
     
