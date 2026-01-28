@@ -19,7 +19,7 @@ class HyperbolicGromovMongeEmbeddingInformedNFlowTraining(torch.nn.Module):
         emb_x = self.emb(x)  # N x emb.d
         log_0_emb_x = self.emb.poincare_map.inverse(emb_x)  # N x emb.d
         # pad log_0_emb_x with zeros to get a vector in R^d
-        p_x = torch.zeros(x.shape[0], self.phi.d, device=x.device)  # N x d
+        p_x = torch.zeros_like(x)  # N x d
         p_x[:, :self.emb.d] = log_0_emb_x
         # p_x = log_0_emb_x @ self.W  # N x d
         phi_inv_p_x = self.phi.inverse(p_x.reshape(x.shape))  # N x d
