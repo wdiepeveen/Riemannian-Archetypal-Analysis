@@ -13,7 +13,7 @@ class StandardVectorHyperbolic(VectorHyperbolic):
         :param x: N x d
         :return: N
         """
-        norm_x_sq = torch.sum(x ** 2, dim=-1)
+        norm_x_sq = torch.sum(x ** 2, dim=-1).clamp(max=1-1e-7)  # N
         return 2 / (1 - norm_x_sq)
     
     def mob_add(self, x, y):
@@ -102,6 +102,7 @@ class StandardVectorHyperbolic(VectorHyperbolic):
         else:
             t_mat = t
         tlog = log.unsqueeze(-2) * t_mat.unsqueeze(-1)  # N x M x L x K x d
+
         return self.exp(x.reshape(N * M, self.d), tlog.reshape(N * M, L * K, self.d)).reshape(N, M, L, K, self.d)
 
     def log(self, x, y):
@@ -113,8 +114,8 @@ class StandardVectorHyperbolic(VectorHyperbolic):
         """
         lambda_x = self.lambda_factor(x.reshape(-1,self.d)).reshape(x.shape[:-1]) # N x M
         diff = self.mob_add(-x, y) # N x M x L x d
-        norm_diff = torch.norm(diff, dim=-1) # N x M x L
-        return (2 / lambda_x.unsqueeze(2).unsqueeze(-1)) * torch.atanh(norm_diff).unsqueeze(-1) * (diff / (norm_diff.clamp(min=1e-7).unsqueeze(-1)))
+        norm_diff = torch.norm(diff, dim=-1).clamp(min=1e-7) # N x M x L
+        return (2 / lambda_x.unsqueeze(2).unsqueeze(-1)) * torch.atanh(norm_diff.clamp(max=1-1e-7)).unsqueeze(-1) * (diff / (norm_diff.unsqueeze(-1)))
 
     def exp(self, x, X):
         """
@@ -123,9 +124,9 @@ class StandardVectorHyperbolic(VectorHyperbolic):
         :param X: N x M x d
         :return: N x M x d
         """
-        norm_X = torch.norm(X, dim=-1)  # N x M 
+        norm_X = torch.norm(X, dim=-1).clamp(min=1e-7)  # N x M 
         lambda_x = self.lambda_factor(x) # N
-        factor = torch.tanh(lambda_x.unsqueeze(-1) * norm_X / 2).unsqueeze(-1) * X / (norm_X.clamp(min=1e-7).unsqueeze(-1))
+        factor = torch.tanh(lambda_x.unsqueeze(-1) * norm_X / 2).unsqueeze(-1) * X / (norm_X.unsqueeze(-1))
         return self.mob_add(x.unsqueeze(1), factor).squeeze(1)
 
     def distance(self, x, y):

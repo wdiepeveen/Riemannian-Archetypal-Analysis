@@ -8,7 +8,7 @@ class Embedding(torch.nn.Module):
     def forward(self, x):
         """
         
-        :param x: N x d
-        :return: N x output_dim
+        :param x: N x [data_dims]
+        :return: N x d
         """
         raise NotImplementedError
