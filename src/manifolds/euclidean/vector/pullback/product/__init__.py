@@ -15,13 +15,13 @@ class ProductPullbackVectorEuclidean(PullbackVectorEuclidean):
 
     # TODO overwrite manifold mappings
 
-    # def barycentre(self, x, tol=None, max_iter=None, step_size=None, red_coef=None):
-    #     """
+    def barycentre(self, x, tol=None, max_iter=None, step_size=None, red_coef=None): # TODO: debug
+        """
 
-    #     :param x: N x d
-    #     :return: d
-    #     """
-    #     return self.phi.inverse(self.manifold.barycentre(self.phi.forward(x), tol=tol, max_iter=max_iter, step_size=step_size, red_coef=red_coef)[None])[0]
+        :param x: N x d
+        :return: d
+        """
+        return self.phi.inverse([p[None] for p in self.manifold.barycentre(self.phi.forward(x), tol=tol, max_iter=max_iter, step_size=step_size, red_coef=red_coef)])[0]
 
     def inner(self, x, X, Y):
         """
@@ -34,21 +34,21 @@ class ProductPullbackVectorEuclidean(PullbackVectorEuclidean):
         M = X.shape[1]
         L = Y.shape[1]
         return self.manifold.inner(self.phi.forward(x),
-                                   [p.reshape(X.shape[:-1], -1) for p in self.phi.differential_forward((x[:, None].repeat(1,M,1)).reshape(-1, self.d), X.reshape(-1, self.d))],
-                                   [p.reshape(Y.shape[:-1], -1) for p in self.phi.differential_forward((x[:, None].repeat(1,L,1)).reshape(-1, self.d), Y.reshape(-1, self.d))]
+                                   [P.reshape(X.shape[:-1], -1) for P in self.phi.differential_forward((x[:, None].repeat(1,M,1)).reshape(-1, self.d), X.reshape(-1, self.d))],
+                                   [P.reshape(Y.shape[:-1], -1) for P in self.phi.differential_forward((x[:, None].repeat(1,L,1)).reshape(-1, self.d), Y.reshape(-1, self.d))]
                                    )
     
-    def norm(self, x, X): # TODO
+    def norm(self, x, X): # TODO: debug
         """
 
         :param x: N x d
         :param X: N x M x d
         :return: N x M
         """
-        M = X.shape[1]
+        N, M = X.shape[:2]
         
-        phi_x = self.phi.forward(x)[:,None].repeat(1,M,1).reshape(-1, self.d)
-        phi_X = self.phi.differential_forward((x[:, None].repeat(1,M,1)).reshape(-1, self.d), X.reshape(-1, self.d)).reshape(X.shape)
+        phi_x = [p[:,None].repeat(1,M,1).reshape(N * M, -1) for p in self.phi.forward(x)]
+        phi_X = [P.reshape(N,M,-1) for P in self.phi.differential_forward((x[:, None].repeat(1,M,1)).reshape(-1, self.d), X.reshape(-1, self.d))]
         return self.manifold.inner(phi_x, phi_X, phi_X).sqrt().reshape(-1, M)
 
     def geodesic(self, x, y, t):
@@ -73,7 +73,7 @@ class ProductPullbackVectorEuclidean(PullbackVectorEuclidean):
         # Flatten batch for single call to phi inverse
         return self.phi.inverse(phi_geo).reshape(N, M, L, K, d)
             
-    def log(self, x, y): # TODO
+    def log(self, x, y): # TODO: debug
         """
 
         :param x: N x M x d
@@ -84,18 +84,16 @@ class ProductPullbackVectorEuclidean(PullbackVectorEuclidean):
         L = y.shape[1]
 
         # Flatten and map through phi
-        phi_x = self.phi.forward(x.reshape(-1, d)).reshape(N, M, d) 
-        phi_y = self.phi.forward(y.reshape(-1, d)).reshape(N, L, d) 
+        phi_x = [p.reshape(N, M, -1) for p in self.phi.forward(x.reshape(-1, d))]
+        phi_y = [p.reshape(N, L, -1) for p in self.phi.forward(y.reshape(-1, d))]
 
         # log in phi-space
-        phi_log = self.manifold.log(phi_x, phi_y)
+        phi_log = [P.reshape(N * M * L, -1) for P in self.manifold.log(phi_x, phi_y)]
 
         # Flatten batch for single call to differential phi inverse
-        return self.phi.differential_inverse(phi_x[:,:,None].repeat(1,1,L,1).reshape(-1, d),
-                                             phi_log.reshape(-1, d)
-                                             ).reshape(N, M, L, d)
+        return self.phi.differential_inverse([p[:,:,None].repeat(1,1,L,1).reshape(N * M * L, -1) for p in phi_x], phi_log).reshape(N, M, L, d)
 
-    def exp(self, x, X): # TODO
+    def exp(self, x, X): # TODO: debug
         """
 
         :param x: N x d
@@ -106,16 +104,16 @@ class ProductPullbackVectorEuclidean(PullbackVectorEuclidean):
         M = X.shape[1]
 
         # Flatten and map through phi
-        phi_x = self.phi.forward(x.reshape(-1, d)).reshape(N, d) 
-        phi_X = self.phi.differential_forward((x[:, None].repeat(1, M, 1)).reshape(-1, d), X.reshape(-1, d)).reshape(N, M, d)
+        phi_x = [p.reshape(N, -1) for p in self.phi.forward(x.reshape(-1, d))]
+        phi_X = [P.reshape(N, M, -1) for P in self.phi.differential_forward((x[:, None].repeat(1, M, 1)).reshape(-1, d), X.reshape(-1, d))]
 
         # exp in phi-space
         phi_exp = self.manifold.exp(phi_x, phi_X)
 
         # Flatten batch for single call to phi inverse
-        return self.phi.inverse(phi_exp.reshape(-1, d)).reshape(N, M, d)
+        return self.phi.inverse([p.reshape(N * M, -1) for p in phi_exp]).reshape(N, M, d)
 
-    def distance(self, x, y): # TODO
+    def distance(self, x, y): # TODO: debug
         """
 
         :param x: N x M x d
@@ -126,13 +124,13 @@ class ProductPullbackVectorEuclidean(PullbackVectorEuclidean):
         L = y.shape[1]
 
         # Flatten and map through phi
-        phi_x = self.phi.forward(x.reshape(-1, d)).reshape(N, M, d) 
-        phi_y = self.phi.forward(y.reshape(-1, d)).reshape(N, L, d) 
+        phi_x = [p.reshape(N, M, -1) for p in self.phi.forward(x.reshape(-1, d))]
+        phi_y = [p.reshape(N, L, -1) for p in self.phi.forward(y.reshape(-1, d))]
 
         # distance in phi-space
         return self.manifold.distance(phi_x, phi_y).reshape(N, M, L)
 
-    def parallel_transport(self, x, X, y): # TODO
+    def parallel_transport(self, x, X, y): # TODO: debug
         """
 
         :param x: N x M x d
@@ -145,12 +143,12 @@ class ProductPullbackVectorEuclidean(PullbackVectorEuclidean):
         K = X.shape[2]
 
         # Flatten and map through phi
-        phi_x = self.phi.forward(x.reshape(-1, d)).reshape(N, M, d)
-        phi_y = self.phi.forward(y.reshape(-1, d)).reshape(N, L, d)
-        phi_X = self.phi.differential_forward((x[:, :, None].repeat(1, 1, K, 1)).reshape(-1, d), X.reshape(-1, d)).reshape(N, M, K, d)
+        phi_x = [p.reshape(N, M, -1) for p in self.phi.forward(x.reshape(-1, d))]
+        phi_y = [p.reshape(N, L, -1) for p in self.phi.forward(y.reshape(-1, d))]
+        phi_X = [P.reshape(N, M, K, -1) for P in self.phi.differential_forward((x[:, :, None].repeat(1, 1, K, 1)).reshape(-1, d), X.reshape(-1, d))]
 
         # parallel transport in phi-space
-        phi_pt = self.manifold.parallel_transport(phi_x, phi_X, phi_y).reshape(N, M, L, K, d)
+        phi_pt = [P.reshape(N, M, L, K, -1) for P in self.manifold.parallel_transport(phi_x, phi_X, phi_y)]
 
         # Flatten batch for single call to differential phi inverse
         return self.phi.differential_inverse((phi_y[:, None].repeat(1, M, 1, K, 1)).reshape(-1, d), phi_pt.reshape(-1, d)).reshape(N, M, L, K, d)
