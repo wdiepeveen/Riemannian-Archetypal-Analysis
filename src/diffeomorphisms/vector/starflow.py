@@ -1,7 +1,7 @@
 from torch.autograd.functional import jvp, vjp
 
 from src.diffeomorphisms.vector import VectorDiffeomorphism
-from src.diffeomorphisms.vector.radial import RadialVectorDiffeomorphism
+from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
 from src.diffeomorphisms.vector.transform import TransformVectorDiffeomorphism
         
 class StarFlowVectorDiffeomorphism(VectorDiffeomorphism):
@@ -10,7 +10,7 @@ class StarFlowVectorDiffeomorphism(VectorDiffeomorphism):
 
         self._starflow = starflow
         self.transform = TransformVectorDiffeomorphism(starflow.transform)
-        self.radial = RadialVectorDiffeomorphism(d, starflow.distribution.rho)
+        self.radial = StarGaussianVectorDiffeomorphism(starflow.distribution)
 
     def forward(self, x):
         """

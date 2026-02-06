@@ -13,10 +13,10 @@ class StarGaussianDistribution(Distribution):
     over the sphere.
     """
 
-    def __init__(self, dim, rho, n_mc_norm=2048, mcmc_steps=10, mcmc_step_size=0.1):
+    def __init__(self, radial, n_mc_norm=2048, mcmc_steps=10, mcmc_step_size=0.1):
         super().__init__()
-        self.dim = dim
-        self._rho = rho
+        self.d = radial.d
+        self.radial = radial
 
         self.n_mc_norm = n_mc_norm
         self.mcmc_steps = mcmc_steps
@@ -34,7 +34,7 @@ class StarGaussianDistribution(Distribution):
         theta: (..., d) unit vectors
         returns rho(theta): (...,)
         """
-        return self._rho(theta)
+        return self.radial(theta)
 
     # ---------- log normalizing constant (differentiable MC) ----------
 
@@ -47,7 +47,7 @@ class StarGaussianDistribution(Distribution):
         We approximate the sphere integral by MC with uniform samples on S^{d-1}
         obtained via reparameterization (Gaussian -> normalize).
         """
-        d = self.dim
+        d = self.d
         n_mc = self.n_mc_norm
 
         # 1. sample omega ~ Unif(S^{d-1}) by normalizing Gaussians (reparameterized)
@@ -100,7 +100,7 @@ class StarGaussianDistribution(Distribution):
         log weight for theta ~ rho(theta)^d.
         theta: (N, d) on S^{d-1}
         """
-        return self.dim * torch.log(self.rho(theta))  # (N,)
+        return self.d * torch.log(self.rho(theta))  # (N,)
 
     @torch.no_grad()
     def _sample_theta(self, num_samples):
@@ -108,7 +108,7 @@ class StarGaussianDistribution(Distribution):
         Crude random-walk Metropolis on S^{d-1} with target density ∝ rho(theta)^d.
         Returns (num_samples, d) unit vectors.
         """
-        d = self.dim
+        d = self.d
 
         # initialize from uniform on S^{d-1}
         theta = torch.randn(num_samples, d, device=self._const_buffer.device)
@@ -141,7 +141,7 @@ class StarGaussianDistribution(Distribution):
         theta = self._sample_theta(num_samples)            # (N, d)
 
         # Gamma(shape=d/2, rate=1)
-        gamma_dist = torch.distributions.Gamma(self.dim / 2.0, 1.0)
+        gamma_dist = torch.distributions.Gamma(self.d / 2.0, 1.0)
         U = gamma_dist.sample((num_samples,)).to(self._const_buffer.device)   # (N,)
 
         rho_theta = self.rho(theta)                        # (N,)
