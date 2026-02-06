@@ -1,12 +1,14 @@
 from torch.autograd.functional import jvp, vjp
 
 from src.diffeomorphisms.vector import VectorDiffeomorphism
+from src.diffeomorphisms.vector.transform import TransformVectorDiffeomorphism
         
 class NFlowVectorDiffeomorphism(VectorDiffeomorphism):
     def __init__(self, d, nflow):
         super().__init__(d)
 
-        self.nflow = nflow
+        self._nflow = nflow
+        self.transform = TransformVectorDiffeomorphism(nflow.transform)
 
     def forward(self, x):
         """
@@ -14,8 +16,7 @@ class NFlowVectorDiffeomorphism(VectorDiffeomorphism):
         :param x: N x d
         :return: N x d
         """
-        out, _ = self.nflow._transform(x, context=None)
-        return out
+        return self.transform(x)
 
     def inverse(self, y):
         """
@@ -23,8 +24,7 @@ class NFlowVectorDiffeomorphism(VectorDiffeomorphism):
         :param y: N x d
         :return: N x d
         """
-        out, _ = self.nflow._transform.inverse(y, context=None)
-        return out
+        return self.transform.inverse(y)
 
     def differential_forward(self, x, X):
         """
@@ -33,8 +33,7 @@ class NFlowVectorDiffeomorphism(VectorDiffeomorphism):
         :param X: N x d
         :return: N x d
         """
-        _, jvp_result = jvp(lambda x: self.nflow._transform(x, context=None)[0], (x,), (X,))
-        return jvp_result
+        return self.transform.differential_forward(x, X)
 
     def differential_inverse(self, y, Y):
         """
@@ -43,10 +42,9 @@ class NFlowVectorDiffeomorphism(VectorDiffeomorphism):
         :param Y: N x d
         :return: N x d
         """
-        _, jvp_result = jvp(lambda y: self.nflow._transform.inverse(y, context=None)[0], (y,), (Y,))
-        return jvp_result
+        return self.transform.differential_inverse(y, Y)
     
-    def adjoint_differential_forward(self, x, X, context=None):
+    def adjoint_differential_forward(self, x, X):
         """
         Compute the adjoint differential map of phi at x for a vector X.
         
@@ -54,10 +52,9 @@ class NFlowVectorDiffeomorphism(VectorDiffeomorphism):
         :param X: N x d
         :return: N x d
         """
-        _, vjp_result = vjp(lambda x: self.nflow._transform(x, context=context)[0], x, X)
-        return vjp_result[0]
+        return self.transform.adjoint_differential_forward(x, X)
 
-    def adjoint_differential_inverse(self, y, Y, context=None):
+    def adjoint_differential_inverse(self, y, Y):
         """
         Compute the adjoint differential map of the inverse of phi at y for a vector Y.
         
@@ -65,6 +62,5 @@ class NFlowVectorDiffeomorphism(VectorDiffeomorphism):
         :param Y: N x d
         :return: N x d
         """
-        _, vjp_result = vjp(lambda y: self.nflow._transform.inverse(y, context=context)[0], (y,), (Y,))
-        return vjp_result[0]
+        return self.transform.adjoint_differential_inverse(y, Y)
     

@@ -2,7 +2,7 @@ import math
 import torch
 from nflows.distributions.base import Distribution
 
-class StarGaussian(Distribution):
+class StarGaussianDistribution(Distribution):
     r"""
     Star-Gaussian in R^d with density
 
