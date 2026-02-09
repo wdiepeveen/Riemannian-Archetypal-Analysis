@@ -1,7 +1,7 @@
 import torch 
 
 class Radial(torch.nn.Module):
-    def __init__(self, d=2):
+    def __init__(self, d):
         super().__init__()
         self.d = d
 

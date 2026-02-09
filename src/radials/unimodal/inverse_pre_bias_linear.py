@@ -1,0 +1,37 @@
+import torch
+
+from src.radials.unimodal import UniModalRadial
+from src.nn.module.pre_bias_linear import PreBiasLinear
+
+class InversePreBiasLinearRadial(UniModalRadial):
+    def __init__(self, d, centered=True):
+        """
+        
+        :param centered: bool, whether the linear layer should have a bias term
+        """
+        super().__init__(d)
+
+        self.pre_bias_linear = PreBiasLinear(self.d, self.d, bias=not centered)
+
+    def forward(self, theta):
+        return 1/(self.pre_bias_linear(theta).norm(dim=-1) + 1e-8)
+    
+    @property
+    def mode_mean(self):
+        """
+        Return the mean of the mode of the radial.
+        """
+        if self.pre_bias_linear.bias is not None:
+            with torch.no_grad():
+                return self.pre_bias_linear.bias.clone()
+        else:
+            return torch.zeros(self.d)
+        
+    @property
+    def mode_variance(self):
+        """
+        Return the variance of the mode of the radial.
+        """
+        with torch.no_grad():
+            W = self.pre_bias_linear.weight.clone()
+            return W.t() @ W
