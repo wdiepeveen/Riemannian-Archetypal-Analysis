@@ -5,12 +5,12 @@ from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomor
 from src.diffeomorphisms.vector.transform import TransformVectorDiffeomorphism
         
 class StarFlowVectorDiffeomorphism(VectorDiffeomorphism):
-    def __init__(self, d, starflow):
+    def __init__(self, d, star_flow):
         super().__init__(d)
 
-        self._starflow = starflow
-        self.transform = TransformVectorDiffeomorphism(starflow.transform)
-        self.radial = StarGaussianVectorDiffeomorphism(starflow.distribution)
+        self.star_flow = star_flow
+        self.transform = TransformVectorDiffeomorphism(self.d, star_flow._transform)
+        self.radial = StarGaussianVectorDiffeomorphism(self.d, star_flow._distribution)
 
     def forward(self, x):
         """

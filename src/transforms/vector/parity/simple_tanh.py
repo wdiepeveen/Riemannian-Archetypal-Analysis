@@ -14,7 +14,6 @@ class SimpleTanhParityVectorTransform(ParityVectorTransform):
             fc1,
             act,
             fc2,
-            act
         )
         super().__init__(d, r, nn, parity)
 

@@ -34,4 +34,4 @@ class InversePreBiasLinearRadial(UniModalRadial):
         """
         with torch.no_grad():
             W = self.pre_bias_linear.weight.clone()
-            return W.t() @ W
+            return torch.inverse(W.t() @ W)
