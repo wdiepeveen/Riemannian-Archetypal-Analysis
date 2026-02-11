@@ -1,15 +1,15 @@
 from torch.autograd.functional import jvp, vjp
 
-from src.diffeomorphisms.vector import VectorDiffeomorphism
-from src.diffeomorphisms.vector.transform import TransformVectorDiffeomorphism
+from src.diffeomorphisms.image import ImageDiffeomorphism
+from src.diffeomorphisms.image.transform import TransformImageDiffeomorphism
         
-class NFlowVectorDiffeomorphism(VectorDiffeomorphism):
-    def __init__(self, d, nflow):
-        super().__init__(d)
+class NFlowImageDiffeomorphism(ImageDiffeomorphism):
+    def __init__(self, in_channels, height, width, nflow):
+        super().__init__(in_channels, height, width)
 
         self.nflow = nflow
-        self.transform = TransformVectorDiffeomorphism(d, nflow._transform)
-
+        self.transform = TransformImageDiffeomorphism(in_channels, height, width, nflow._transform)
+        
     def forward(self, x):
         """
         Forward pass through the diffeomorphism.

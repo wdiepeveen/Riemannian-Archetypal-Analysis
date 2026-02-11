@@ -10,18 +10,16 @@ class ParityVectorTransform(VectorTransform):
         self.nn = network
         self.parity = parity % 2
 
+        self.mask = self.generate_vector_mask()
+
 
     def forward(self, x, context=None):
         log_abs_det = torch.zeros(1, device=x.device)
         
         # Apply non-linearity
-        z = torch.zeros_like(x)
-        if self.parity == 0:
-            z[:,:self.r] = x[:,:self.r]
-            z[:,self.r:] = x[:,self.r:] + self.nn(x[:,:self.r])
-        else:
-            z[:,(self.d - self.r):] = x[:,(self.d - self.r):]
-            z[:,:(self.d - self.r)] = x[:,:(self.d - self.r)] + self.nn(x[:,(self.d - self.r):])
+        z = torch.zeros_like(x) 
+        z[:,self.mask] = x[:,self.mask]
+        z[:,~self.mask] = x[:,~self.mask] + self.nn(x[:,self.mask])
 
         return z, log_abs_det.expand(x.shape[0])
     
@@ -30,11 +28,15 @@ class ParityVectorTransform(VectorTransform):
     
         # Apply non-linearity
         x = torch.zeros_like(z)
-        if self.parity == 0:
-            x[:,:self.r] = z[:,:self.r]
-            x[:,self.r:] = z[:,self.r:] - self.nn(z[:,:self.r])
-        else:
-            x[:,(self.d - self.r):] = z[:,(self.d - self.r):]
-            x[:,:(self.d - self.r)] = z[:,:(self.d - self.r)] - self.nn(z[:,(self.d - self.r):])
+        x[:,self.mask] = z[:,self.mask]
+        x[:,~self.mask] = z[:,~self.mask] - self.nn(z[:,self.mask])
 
         return x, log_abs_det.expand(z.shape[0])
+    
+    def generate_vector_mask(self):
+        mask = torch.zeros(self.d, dtype=torch.bool)
+        if self.parity == 0:
+            mask[:self.r] = 1
+        else:
+            mask[(self.d - self.r):] = 1
+        return mask

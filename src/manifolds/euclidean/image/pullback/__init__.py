@@ -52,7 +52,7 @@ class PullbackImageEuclidean(ImageEuclidean):
         phi_geo = self.manifold.geodesic(phi_x, phi_y, t)
 
         # Flatten batch for single call to phi inverse
-        return self.phi.inverse(phi_geo.reshape(-1, self.d)).reshape(N, M, L, K, C, H, W)    
+        return self.phi.inverse(phi_geo.reshape(-1, C, H, W)).reshape(N, M, L, K, C, H, W)    
 
     def log(self, x, y): 
         """

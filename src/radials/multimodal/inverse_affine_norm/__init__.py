@@ -1,10 +1,9 @@
 from src.radials.multimodal import MultiModalRadial
-from src.radials.unimodal.inverse_pre_bias_linear import InversePreBiasLinearRadial
+from src.radials.unimodal.inverse_affine_norm.pre_bias_diagonal import InversePreBiasDiagonalNormRadial
 
-class MultiInversePreBiasLinearRadial(MultiModalRadial):
-    def __init__(self, d, num_radials, centered=True):
-        super().__init__(d, [InversePreBiasLinearRadial(d, centered=centered) for _ in range(num_radials)])
-
+class MultiInverseAffineNormRadial(MultiModalRadial):
+    def __init__(self, d, radials):
+        super().__init__(d, radials)
 
     def mode_mean(self, idx):
         """
