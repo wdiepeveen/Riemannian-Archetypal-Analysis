@@ -11,28 +11,28 @@ class CompositionDiffeomorphism(Diffeomorphism):
         self.diffeos = diffeos
 
     def forward(self, x):
-        out = x
+        out = x.clone()
         for diffeo in self.diffeos:
             out = diffeo.forward(out)
         return out  
     
     def inverse(self, y):
-        out = y
+        out = y.clone()
         for diffeo in reversed(self.diffeos):
             out = diffeo.inverse(out)
         return out
     
     def differential_forward(self, x, X):
-        out = X
-        current_x = x
+        out = X.clone()
+        current_x = x.clone()
         for diffeo in self.diffeos:
             out = diffeo.differential_forward(current_x, out)
             current_x = diffeo.forward(current_x)
         return out
     
     def differential_inverse(self, y, Y):
-        out = Y
-        current_y = y
+        out = Y.clone()
+        current_y = y.clone()
         for diffeo in reversed(self.diffeos):
             out = diffeo.differential_inverse(current_y, out)
             current_y = diffeo.inverse(current_y)

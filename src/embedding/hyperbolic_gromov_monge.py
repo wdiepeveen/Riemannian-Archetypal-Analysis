@@ -70,12 +70,12 @@ class HyperbolicGromovMongeEmbedding(Embedding):
         interp_emb = self.manifold.geodesic(emb1.unsqueeze(1), emb2.unsqueeze(1), t).squeeze(2).squeeze(1)
         return interp_emb
     
-    def barycentre(self, x):
+    def barycentre(self, x, max_iter=500, tol=1e-5, step_size=0.5):
         """
         
         :param x: N x [data_dims]
         :return: output_dim
         """
         emb_points = self.forward(x)
-        barycentre = self.manifold.barycentre(emb_points, max_iter=500, tol=1e-5, step_size=0.5)
+        barycentre = self.manifold.barycentre(emb_points, max_iter=max_iter, tol=tol, step_size=step_size)
         return barycentre
