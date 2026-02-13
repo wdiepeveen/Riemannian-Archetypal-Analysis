@@ -1,6 +1,6 @@
 import torch
 
-from src.riemannian_autoencoder import RiemannianAutoencoder
+from src._riemannian_autoencoder import RiemannianAutoencoder
 
 class VectorRiemannianAutoencoder(RiemannianAutoencoder): # TODO maybe the precomputed gram matrix gives issues in the learning?
     def __init__(self, vector_euclidean,  base_point, tangent_basis, ONB=True):

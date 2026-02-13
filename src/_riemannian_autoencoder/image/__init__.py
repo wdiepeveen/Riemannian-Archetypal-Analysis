@@ -1,4 +1,4 @@
-from src.riemannian_autoencoder import RiemannianAutoencoder
+from src._riemannian_autoencoder import RiemannianAutoencoder
 
 class ImageRiemannianAutoencoder(RiemannianAutoencoder):
     def __init__(self, image_euclidean):

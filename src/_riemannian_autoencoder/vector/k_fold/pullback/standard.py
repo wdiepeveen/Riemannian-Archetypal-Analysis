@@ -1,5 +1,5 @@
 from src.manifolds.euclidean.vector.pullback.standard import StandardPullbackVectorEuclidean
-from src.riemannian_autoencoder.vector.k_fold import KfoldVectorRiemannianAutoencoder
+from src._riemannian_autoencoder.vector.k_fold import KfoldVectorRiemannianAutoencoder
 
 class StandardPullbackKfoldVectorRiemannianAutoencoder(KfoldVectorRiemannianAutoencoder):
     def __init__(self, vector_diffeomorphism, base_point, tangent_basis, K=5, step_size=0.5, ONB=True):

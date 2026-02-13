@@ -1,4 +1,4 @@
-from src.riemannian_autoencoder.vector import VectorRiemannianAutoencoder
+from src._riemannian_autoencoder.vector import VectorRiemannianAutoencoder
 
 class KfoldVectorRiemannianAutoencoder(VectorRiemannianAutoencoder):
     def __init__(self, vector_euclidean, base_point, tangent_basis, K=5, step_size=0.5, ONB=True):

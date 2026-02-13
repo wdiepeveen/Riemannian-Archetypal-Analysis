@@ -1,6 +1,6 @@
 import torch
 
-from src.riemannian_autoencoder.vector import VectorRiemannianAutoencoder
+from src._riemannian_autoencoder.vector import VectorRiemannianAutoencoder
 
 class StandardVectorRiemannianAutoencoder(VectorRiemannianAutoencoder):
     def __init__(self, vector_euclidean, base_point, tangent_basis, ONB=True):
