@@ -1,9 +1,9 @@
 from src.distributions.star_gaussians import StarGaussianDistribution
-from src.radials.multimodal.inverse_affine_norm.pre_bias_linear import MultiInversePreBiasLinearNormRadial
+from src.radials.multimodal.inverse_affine_norm.linear import MultiInverseLinearNormRadial
 
-class MultiInversePreBiasLinearStarNormGaussianDistribution(StarGaussianDistribution):
-    def __init__(self, d, num_radials, centered=True):
-        super().__init__(MultiInversePreBiasLinearNormRadial(d, num_radials, centered=centered))
+class MultiInverseLinearStarNormGaussianDistribution(StarGaussianDistribution):
+    def __init__(self, d, num_radials, r=None, sigma=1e-6):
+        super().__init__(MultiInverseLinearNormRadial(d, num_radials, r=r, sigma=sigma))
         
     def extract_mode(self, idx):
         """

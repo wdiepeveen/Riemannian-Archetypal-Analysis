@@ -1,11 +1,12 @@
 from src.radials.unimodal import UniModalRadial
 
 class InverseAffineNormRadial(UniModalRadial):
-    def __init__(self, d):
+    def __init__(self, d, sigma=1e-6):
         super().__init__(d)
+        self.sigma = sigma
 
     def forward(self, theta):
-        return 1/(self.affine(theta).norm(dim=-1) + 1e-8)
+        return 1/(self.affine(theta).norm(dim=-1)**2 + self.sigma **2).sqrt()
     
     def affine(self, theta):
         """
