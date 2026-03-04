@@ -1,12 +1,14 @@
 import torch
 
 from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
+from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
+from src.diffeomorphisms.identity import IdentityDiffeomorphism
 
 class LatentStarGaussianTraining(torch.nn.Module):
-    def __init__(self, diffeo, star_gaussian, lr=1e-3):
+    def __init__(self, diffeo, product_distribution, lr=1e-3):
         super(LatentStarGaussianTraining, self).__init__()
         self.phi = diffeo
-        self.star = star_gaussian
+        self.star = product_distribution
         
         self.optimizer = torch.optim.Adam(self.star.parameters(), lr=lr)
 
@@ -15,7 +17,7 @@ class LatentStarGaussianTraining(torch.nn.Module):
         if self.phi.d == self.star.d:
             return StarGaussianVectorDiffeomorphism(self.phi.d, self.star)
         else:
-            raise ValueError("Diffeomorphic decoder dimension must match star gaussian dimension to construct psi.")
+            return ProductVectorDiffeomorphism([StarGaussianVectorDiffeomorphism(self.star.d, self.star), IdentityDiffeomorphism(self.phi.d - self.star.d)])    
 
     def loss(self, x):
         phi_x = self.phi.forward(x).reshape(x.shape[0], -1)  # N x d
