@@ -5,12 +5,12 @@ from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomor
 from src.diffeomorphisms.vector.transform import TransformVectorDiffeomorphism
         
 class StarFlowVectorDiffeomorphism(VectorDiffeomorphism):
-    def __init__(self, d, star_flow):
+    def __init__(self, d, starflow):
         super().__init__(d)
 
-        self.star_flow = star_flow
-        self.transform = TransformVectorDiffeomorphism(self.d, star_flow._transform)
-        self.radial = StarGaussianVectorDiffeomorphism(self.d, star_flow._distribution)
+        self.starflow = starflow
+        self.transform = TransformVectorDiffeomorphism(self.d, starflow._transform)
+        self.radial = StarGaussianVectorDiffeomorphism(self.d, starflow._distribution)
 
     def forward(self, x):
         """
@@ -46,23 +46,23 @@ class StarFlowVectorDiffeomorphism(VectorDiffeomorphism):
         """
         return self.transform.differential_inverse(self.radial.inverse(y), self.radial.differential_inverse(y, Y))
     
-    # def adjoint_differential_forward(self, x, X):
-    #     """
-    #     Compute the adjoint differential map of phi at x for a vector X.
+    def adjoint_differential_forward(self, x, X):
+        """
+        Compute the adjoint differential map of phi at x for a vector X.
         
-    #     :param x: N x d
-    #     :param X: N x d
-    #     :return: N x d
-    #     """
-    #     return self.transform.adjoint_differential_forward(x, X)
+        :param x: N x d
+        :param X: N x d
+        :return: N x d
+        """
+        return self.transform.adjoint_differential_forward(x, self.radial.adjoint_differential_forward(self.transform.forward(x), X))
 
-    # def adjoint_differential_inverse(self, y, Y):
-    #     """
-    #     Compute the adjoint differential map of the inverse of phi at y for a vector Y.
+    def adjoint_differential_inverse(self, y, Y):
+        """
+        Compute the adjoint differential map of the inverse of phi at y for a vector Y.
         
-    #     :param y: N x d
-    #     :param Y: N x d
-    #     :return: N x d
-    #     """
-    #     return self.transform.adjoint_differential_inverse(y, Y)
+        :param y: N x d
+        :param Y: N x d
+        :return: N x d
+        """
+        return self.transform.adjoint_differential_inverse(self.radial.inverse(y), self.radial.adjoint_differential_inverse(y, Y))
     

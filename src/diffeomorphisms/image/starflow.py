@@ -5,12 +5,12 @@ from src.diffeomorphisms.image.transform import TransformImageDiffeomorphism
 from src.diffeomorphisms.image.star_gaussian import StarGaussianImageDiffeomorphism
         
 class StarFlowImageDiffeomorphism(ImageDiffeomorphism):
-    def __init__(self, in_channels, height, width, star_flow):
+    def __init__(self, in_channels, height, width, starflow):
         super().__init__(in_channels, height, width)
 
-        self.star_flow = star_flow
-        self.transform = TransformImageDiffeomorphism(self.C, self.H, self.W, star_flow._transform, vector_output=True)
-        self.radial = StarGaussianImageDiffeomorphism(self.C, self.H, self.W, star_flow._distribution)
+        self.starflow = starflow
+        self.transform = TransformImageDiffeomorphism(self.C, self.H, self.W, starflow._transform, vector_output=True)
+        self.radial = StarGaussianImageDiffeomorphism(self.C, self.H, self.W, starflow._distribution)
 
     def forward(self, x):
         """

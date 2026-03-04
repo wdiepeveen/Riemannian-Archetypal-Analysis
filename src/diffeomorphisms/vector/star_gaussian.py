@@ -1,5 +1,5 @@
 import torch
-from torch.autograd.functional import jvp
+from torch.autograd.functional import jvp, vjp
 
 from src.diffeomorphisms.vector import VectorDiffeomorphism
 
@@ -51,30 +51,102 @@ class StarGaussianVectorDiffeomorphism(VectorDiffeomorphism):
         rho_theta = self.rho(theta)              
 
         star_radius = r * (rho_theta + eps)        
-        return theta * star_radius[..., None]      
+        return theta * star_radius[..., None]  
 
     def differential_forward(self, x, X):
-        """
-        Apply the differential map of the radial transformation at x for a vector X.
-
-        :param x: N x d
-        :param X: N x d
-        :return: N x d
-        """
-        Y = jvp(self.forward, (x,), (X,))[1]
+        # J_phi(x) @ X, with graph kept
+        _, Y = jvp(
+            self.forward,
+            (x,),
+            (X,),
+            create_graph=True,
+            strict=True,
+        )
         is_zero = (x.norm(dim=-1, keepdim=True) == 0)
-        I_X = X  # differential of identity at 0 applied to X is just X
+        I_X = X
         return torch.where(is_zero, I_X, Y)
 
     def differential_inverse(self, y, Y):
-        """
-        Apply the differential map of the inverse of the radial transformation at y for a vector Y.
-
-        :param y: N x d
-        :param Y: N x d
-        :return: N x d
-        """
-        X = jvp(self.inverse, (y,), (Y,))[1]
+        # J_phi^{-1}(y) @ Y
+        _, X = jvp(
+            self.inverse,
+            (y,),
+            (Y,),
+            create_graph=True,
+            strict=True,
+        )
         is_zero = (y.norm(dim=-1, keepdim=True) == 0)
-        I_Y = Y  # differential of identity at 0 applied to Y is just Y
-        return torch.where(is_zero, I_Y, X)
+    # I_Y = Y
+        return torch.where(is_zero, Y, X)
+
+    def adjoint_differential_forward(self, x, X):
+        # Adjoint is a VJP wrt x
+        _, (adj_x,) = vjp(
+            self.forward,
+            (x,),
+            (X,),
+            create_graph=True,
+            strict=True,
+        )
+        is_zero = (x.norm(dim=-1, keepdim=True) == 0)
+        # At 0, use identity adjoint
+        return torch.where(is_zero, X, adj_x)
+
+    def adjoint_differential_inverse(self, y, Y):
+        _, (adj_y,) = vjp(
+            self.inverse,
+            (y,),
+            (Y,),
+            create_graph=True,
+            strict=True,
+        )
+        is_zero = (y.norm(dim=-1, keepdim=True) == 0)
+        return torch.where(is_zero, Y, adj_y)    
+
+    # def differential_forward(self, x, X):
+    #     """
+    #     Apply the differential map of the radial transformation at x for a vector X.
+
+    #     :param x: N x d
+    #     :param X: N x d
+    #     :return: N x d
+    #     """
+    #     Y = jvp(self.forward, (x,), (X,))[1]
+    #     is_zero = (x.norm(dim=-1, keepdim=True) == 0)
+    #     I_X = X  # differential of identity at 0 applied to X is just X
+    #     return torch.where(is_zero, I_X, Y)
+
+    # def differential_inverse(self, y, Y):
+    #     """
+    #     Apply the differential map of the inverse of the radial transformation at y for a vector Y.
+
+    #     :param y: N x d
+    #     :param Y: N x d
+    #     :return: N x d
+    #     """
+    #     X = jvp(self.inverse, (y,), (Y,))[1]
+    #     is_zero = (y.norm(dim=-1, keepdim=True) == 0)
+    #     I_Y = Y  # differential of identity at 0 applied to Y is just Y
+    #     return torch.where(is_zero, I_Y, X)
+    
+    # def adjoint_differential_forward(self, x, X):
+    #     """
+    #     Apply the adjoint of the differential map of the radial transformation at x for a vector X.
+
+    #     :param x: N x d
+    #     :param X: N x d
+    #     :return: N x d
+    #     """
+    #     # For a radial transformation, the adjoint of the differential is the same as the differential.
+    #     return self.differential_forward(x, X)
+    
+    # def adjoint_differential_inverse(self, y, Y):
+    #     """
+    #     Apply the adjoint of the differential map of the inverse of the radial transformation at y for a vector Y.
+
+    #     :param y: N x d
+    #     :param Y: N x d
+    #     :return: N x d
+    #     """
+    #     # For a radial transformation, the adjoint of the differential is the same as the differential.
+    #     return self.differential_inverse(y, Y)

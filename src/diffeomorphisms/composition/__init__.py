@@ -37,3 +37,19 @@ class CompositionDiffeomorphism(Diffeomorphism):
             out = diffeo.differential_inverse(current_y, out)
             current_y = diffeo.inverse(current_y)
         return out
+    
+    def adjoint_differential_forward(self, x, X):
+        out = X.clone()
+        current_x = x.clone()
+        for diffeo in reversed(self.diffeos):
+            out = diffeo.adjoint_differential_forward(current_x, out)
+            current_x = diffeo.forward(current_x)
+        return out
+    
+    def adjoint_differential_inverse(self, y, Y):
+        out = Y.clone()
+        current_y = y.clone()
+        for diffeo in self.diffeos:
+            out = diffeo.adjoint_differential_inverse(current_y, out)
+            current_y = diffeo.inverse(current_y)
+        return out
