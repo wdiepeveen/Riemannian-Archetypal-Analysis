@@ -1,7 +1,7 @@
 from src.radials.unimodal import UniModalRadial
 
 class InverseAffineNormRadial(UniModalRadial):
-    def __init__(self, d, sigma=1e-6):
+    def __init__(self, d, sigma=1e-3):
         super().__init__(d)
         self.sigma = sigma
 

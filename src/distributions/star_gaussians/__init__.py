@@ -13,10 +13,11 @@ class StarGaussianDistribution(Distribution):
     over the sphere.
     """
 
-    def __init__(self, radial, n_mc_norm=2048, mcmc_steps=10, mcmc_step_size=0.1):
+    def __init__(self, d, radial, n_mc_norm=2048, mcmc_steps=10, mcmc_step_size=0.1):
         super().__init__()
-        self.d = radial.d
+        self.d = d
         self.radial = radial
+        assert self.d == radial.d
 
         self.n_mc_norm = n_mc_norm
         self.mcmc_steps = mcmc_steps

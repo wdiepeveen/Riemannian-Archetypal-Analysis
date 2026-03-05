@@ -2,7 +2,7 @@ from src.radials.multimodal.inverse_affine_norm import MultiInverseAffineNormRad
 from src.radials.unimodal.inverse_affine_norm.linear import InverseLinearNormRadial
 
 class MultiInverseLinearNormRadial(MultiInverseAffineNormRadial):
-    def __init__(self, d, num_radials, r=None, sigma=1e-6):
+    def __init__(self, d, num_radials, r=None, sigma=1e-3):
         if r is not None:
             # r is an integer or r is a list
             if isinstance(r, int):

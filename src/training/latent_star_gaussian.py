@@ -5,12 +5,16 @@ from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
 from src.diffeomorphisms.identity import IdentityDiffeomorphism
 
 class LatentStarGaussianTraining(torch.nn.Module):
-    def __init__(self, diffeo, product_distribution, lr=1e-3):
+    def __init__(self, diffeo, star_gaussian_distribution, lr=1e-3):
         super(LatentStarGaussianTraining, self).__init__()
         self.phi = diffeo
-        self.star = product_distribution
+        self.star = star_gaussian_distribution
         
         self.optimizer = torch.optim.Adam(self.star.parameters(), lr=lr)
+
+    @property
+    def psi_o_phi(self):
+        return self.starflow_diffeo
 
     @property
     def psi(self):

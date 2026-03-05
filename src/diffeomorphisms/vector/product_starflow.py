@@ -3,20 +3,21 @@ from torch.autograd.functional import jvp, vjp
 from src.diffeomorphisms.identity import IdentityDiffeomorphism
 from src.diffeomorphisms.vector import VectorDiffeomorphism
 from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
-from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
+from src.diffeomorphisms.vector.starflow import StarFlowVectorDiffeomorphism
 from src.diffeomorphisms.vector.transform import TransformVectorDiffeomorphism
+from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
 from src.distributions.product import ProductDistribution
 from src.distributions.starflows import StarFlowDistribution
 from src.distributions.starflows.products.diagonal import StarDiagonalFlowDistribution
         
-class StarFlowVectorDiffeomorphism(VectorDiffeomorphism):
-    def __init__(self, d, starflow_distribution):
-        assert d == starflow_distribution.d, "Dimension of diffeomorphism must match dimension of StarFlow distribution"
+class ProductStarFlowVectorDiffeomorphism(VectorDiffeomorphism):
+    def __init__(self, d, product_starflow_distribution):
+        assert d == product_starflow_distribution.d, "Dimension of diffeomorphism must match dimension of StarFlow distribution"
         super().__init__(d)
 
-        self.starflow = starflow_distribution
+        self.starflow = product_starflow_distribution
         self.transform = TransformVectorDiffeomorphism(self.d, self.starflow._transform)
-        self.radial = StarGaussianVectorDiffeomorphism(self.d, self.starflow._distribution)
+        self.radial = ProductVectorDiffeomorphism([StarGaussianVectorDiffeomorphism(self.starflow._distribution.distributions[0].d, self.starflow._distribution.distributions[0]), IdentityDiffeomorphism(self.d)])
 
     def forward(self, x):
         """

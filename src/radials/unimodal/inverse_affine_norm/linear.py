@@ -3,7 +3,7 @@ import torch
 from src.radials.unimodal.inverse_affine_norm import InverseAffineNormRadial
 
 class InverseLinearNormRadial(InverseAffineNormRadial):
-    def __init__(self, d, r=None, sigma=1e-6):
+    def __init__(self, d, r=None, sigma=1e-3):
         """
         
         :param centered: bool, whether the linear layer should have a bias term
