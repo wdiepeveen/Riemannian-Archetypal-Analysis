@@ -36,8 +36,15 @@ experiments:
     phase_3:
       enabled: true
       num_epochs: 20
-      learning_rate: 1.0e-3
+      learning_rate: 1.0e-2
+      num_radials: 10
       checkpoint_subdir: "checkpoints_phase_3"
+
+    phase_4:
+      enabled: true
+      num_epochs: 20
+      learning_rate: 1.0e-3
+      checkpoint_subdir: "checkpoints_phase_4"
 
   mnist_16:
     data:
@@ -74,5 +81,12 @@ experiments:
     phase_3:
       enabled: true
       num_epochs: 20
-      learning_rate: 1.0e-3
+      learning_rate: 1.0e-2
+      num_radials: 10
       checkpoint_subdir: "checkpoints_phase_3"
+
+    phase_4:
+      enabled: true
+      num_epochs: 20
+      learning_rate: 1.0e-3
+      checkpoint_subdir: "checkpoints_phase_4"
