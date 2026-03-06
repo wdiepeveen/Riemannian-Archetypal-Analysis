@@ -10,10 +10,6 @@ class LatentStarFlowTraining(torch.nn.Module):
         
         self.optimizer = torch.optim.Adam(self.starflow.parameters(), lr=lr)
 
-    @property
-    def diffeo(self):
-        return ProductStarFlowVectorDiffeomorphism(self.starflow.d, self.starflow)
-
     def loss(self, x):
         log_prob = self.starflow.log_prob(x)  # N
         neg_log_prob_loss = -log_prob.mean()

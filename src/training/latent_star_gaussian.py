@@ -3,6 +3,7 @@ import torch
 from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
 from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
 from src.diffeomorphisms.identity import IdentityDiffeomorphism
+from src.diffeomorphisms.composition import CompositionDiffeomorphism
 
 class LatentStarGaussianTraining(torch.nn.Module):
     def __init__(self, diffeo, star_gaussian_distribution, lr=1e-3):
@@ -11,10 +12,6 @@ class LatentStarGaussianTraining(torch.nn.Module):
         self.star = star_gaussian_distribution
         
         self.optimizer = torch.optim.Adam(self.star.parameters(), lr=lr)
-
-    @property
-    def psi_o_phi(self):
-        return self.starflow_diffeo
 
     @property
     def psi(self):

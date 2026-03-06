@@ -11,9 +11,12 @@ class ToVecImageTransform(ImageTransform):
         :param x: N x C x H x W
         :return: N x (C*H*W)
         """
-        N= x.shape[0]
-        logabsdet = 0.0
-        return x.view(N, -1), logabsdet
+        N = x.shape[0]
+        logabsdet = x.new_zeros(N)
+        return x.reshape(N, -1), logabsdet   # or x.contiguous().view(N, -1)
+        # N= x.shape[0]
+        # logabsdet = 0.0
+        # return x.view(N, -1), logabsdet
     
     def inverse(self, y, context=None):
         """
@@ -21,5 +24,8 @@ class ToVecImageTransform(ImageTransform):
         :return: N x C x H x W
         """
         N = y.shape[0]
-        logabsdet = 0.0
-        return y.view(N, self.C, self.H, self.W), logabsdet
+        logabsdet = y.new_zeros(N)
+        return y.reshape(N, self.C, self.H, self.W), logabsdet
+        # N = y.shape[0]
+        # logabsdet = 0.0
+        # return y.view(N, self.C, self.H, self.W), logabsdet

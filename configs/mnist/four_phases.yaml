@@ -1,4 +1,4 @@
-base_results_dir: "results/mnist/three_phases"
+base_results_dir: "results/mnist/four_phases"
 
 experiments:
   mnist_8:
@@ -27,17 +27,17 @@ experiments:
       learning_rate: 1.0e-3  
       reg_param: 1.0e-4                
       in_channels: 1
+      squeeze_factor: 2
       kernel_size: 3
       hidden_channels: 32
       n_flows: 5
       checkpoint_subdir: "checkpoints_phase_2"
 
     phase_3:
-      enabled: false
-      num_epochs: 0
+      enabled: true
+      num_epochs: 20
       learning_rate: 1.0e-3
       checkpoint_subdir: "checkpoints_phase_3"
-      # add extra hyperparameters when you implement phase 3
 
   mnist_16:
     data:
@@ -65,13 +65,14 @@ experiments:
       learning_rate: 1.0e-3
       reg_param: 1.0e-4
       in_channels: 1
+      squeeze_factor: 4
       kernel_size: 3
       hidden_channels: 32
       n_flows: 5
       checkpoint_subdir: "checkpoints_phase_2"
 
     phase_3:
-      enabled: false
-      num_epochs: 0
+      enabled: true
+      num_epochs: 20
       learning_rate: 1.0e-3
       checkpoint_subdir: "checkpoints_phase_3"
