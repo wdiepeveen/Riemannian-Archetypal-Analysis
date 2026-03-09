@@ -3,7 +3,6 @@ import torch
 from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
 from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
 from src.diffeomorphisms.identity import IdentityDiffeomorphism
-from src.diffeomorphisms.composition import CompositionDiffeomorphism
 
 class LatentStarGaussianTraining(torch.nn.Module):
     def __init__(self, diffeo, star_gaussian_distribution, lr=1e-3):
