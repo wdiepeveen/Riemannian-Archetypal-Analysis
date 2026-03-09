@@ -1,11 +1,8 @@
 import torch
 
-from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
-from src.diffeomorphisms.vector.product_starflow import ProductStarFlowVectorDiffeomorphism
-
-class LatentStarFlowTraining(torch.nn.Module):
+class ProductStarFlowTraining(torch.nn.Module):
     def __init__(self, product_starflow_distribution, lr=1e-3):
-        super(LatentStarFlowTraining, self).__init__()
+        super(ProductStarFlowTraining, self).__init__()
         self.starflow = product_starflow_distribution
         
         self.optimizer = torch.optim.Adam(self.starflow.parameters(), lr=lr)
