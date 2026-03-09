@@ -5,22 +5,21 @@ from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
 from src.diffeomorphisms.identity import IdentityDiffeomorphism
 
 class LatentStarGaussianTraining(torch.nn.Module):
-    def __init__(self, diffeo, star_gaussian_distribution, lr=1e-3):
+    def __init__(self, embedding, star_gaussian_distribution, lr=1e-3):
         super(LatentStarGaussianTraining, self).__init__()
-        self.phi = diffeo
+        self.emb = embedding
         self.star = star_gaussian_distribution
         
         self.optimizer = torch.optim.Adam(self.star.parameters(), lr=lr)
 
-    @property
-    def psi(self):
-        if self.phi.d == self.star.d:
-            return StarGaussianVectorDiffeomorphism(self.phi.d, self.star)
+    def psi(self, d):
+        if d == self.star.d:
+            return StarGaussianVectorDiffeomorphism(d, self.star)
         else:
-            return ProductVectorDiffeomorphism([StarGaussianVectorDiffeomorphism(self.star.d, self.star), IdentityDiffeomorphism(self.phi.d - self.star.d)])    
+            return ProductVectorDiffeomorphism([StarGaussianVectorDiffeomorphism(self.star.d, self.star), IdentityDiffeomorphism(d - self.star.d)])    
 
     def loss(self, x):
-        phi_x = self.phi.forward(x).reshape(x.shape[0], -1)  # N x d
+        phi_x = self.emb.forward(x).reshape(x.shape[0], -1)  # N x d
         log_prob = self.star.log_prob(phi_x[:,:self.star.d])  # N
         neg_log_prob_loss = -log_prob.mean()
         return neg_log_prob_loss

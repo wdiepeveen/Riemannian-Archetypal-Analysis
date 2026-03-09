@@ -24,7 +24,7 @@ experiments:
     phase_2:
       enabled: true
       num_epochs: 10         
-      learning_rate: 1.0e-3  
+      learning_rate: 1.0e-2  
       reg_param: 1.0e-4                
       in_channels: 1
       squeeze_factor: 2
@@ -69,7 +69,7 @@ experiments:
     phase_2:
       enabled: true
       num_epochs: 20
-      learning_rate: 1.0e-3
+      learning_rate: 1.0e-2
       reg_param: 1.0e-4
       in_channels: 1
       squeeze_factor: 4
