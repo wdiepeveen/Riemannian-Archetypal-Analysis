@@ -21,7 +21,7 @@ class HyperbolicGromovMongeEmbedding(Embedding):
         nn_output = self.nn_model(x)
         hyperbolic_embedding = self.poincare_map(nn_output)
         if self.origin is not None:
-            hyperbolic_embedding = self.translate(hyperbolic_embedding, self.origin)
+            hyperbolic_embedding = self.translate(hyperbolic_embedding, self.origin.to(x.device))
         return hyperbolic_embedding
     
     def set_origin(self, origin):

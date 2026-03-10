@@ -16,7 +16,7 @@ class ParityConvImageTransform(ImageTransform):
         # Apply non-linearity
         z = torch.zeros_like(x)
         z[:,self.mask] = x[:,self.mask]
-        z[:,~self.mask] = x[:,~self.mask] + self.conv(self.mask[None] * x)[:,~self.mask]
+        z[:,~self.mask] = x[:,~self.mask] + self.conv(self.mask[None].to(x.device) * x)[:,~self.mask]
         return z, log_abs_det.expand(x.shape[0])
     
     def inverse(self, z, context=None):
@@ -25,7 +25,7 @@ class ParityConvImageTransform(ImageTransform):
         # Apply non-linearity
         x = torch.zeros_like(z)
         x[:,self.mask] = z[:,self.mask]
-        x[:,~self.mask] = z[:,~self.mask] - self.conv(self.mask[None] * z)[:,~self.mask]
+        x[:,~self.mask] = z[:,~self.mask] - self.conv(self.mask[None].to(z.device) * z)[:,~self.mask]
         return x, log_abs_det.expand(z.shape[0])
     
     def generate_image_mask(self):
