@@ -1,5 +1,5 @@
 from src.radials.multimodal import MultiModalRadial
-from src.radials.unimodal.elliposoid.spd import SPDEllipsoidUniModalRadial
+from src.radials.unimodal.elliposoid.spd_2d import SPDEllipsoidUniModalRadial
 
 class MultiSPDEllipsoidRadial(MultiModalRadial):
     def __init__(self, d, Sigmas, signs, aggregation='sum'):

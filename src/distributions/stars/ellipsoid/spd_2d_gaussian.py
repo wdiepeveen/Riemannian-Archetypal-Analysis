@@ -1,5 +1,5 @@
 from src.distributions.stars import StarDistribution
-from src.radials.unimodal.elliposoid.spd import SPDEllipsoidUniModalRadial
+from src.radials.unimodal.elliposoid.spd_2d import SPDEllipsoidUniModalRadial
 
 class SPDEllipsoidStarDistribution(StarDistribution):
     def __init__(self, Sigma, sign=1):
