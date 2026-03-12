@@ -1,0 +1,13 @@
+import torch
+
+from src.radials.unimodal.elliposoid.offcentered import OffCenteredEllipsoidRadial
+
+class EllipsoidEnclosingOffCenteredEllipsoidRadial(OffCenteredEllipsoidRadial):
+    def __init__(self, mu, cov, c=4/3):
+        super().__init__(mu, cov, c=c)
+
+    def construct_Sigma(self):
+        lambda_1 = torch.maximum(self.c ** 2 * self.mu.norm(2) ** 2, torch.linalg.eigvals(self.cov).real.max())
+        mu_o_mu = torch.outer(self.mu, self.mu) / self.mu.norm(2) ** 2
+        Sigma = lambda_1 * mu_o_mu + (torch.eye(self.mu.shape[0]) - mu_o_mu) @ self.cov @ (torch.eye(self.mu.shape[0]) - mu_o_mu)
+        return Sigma
