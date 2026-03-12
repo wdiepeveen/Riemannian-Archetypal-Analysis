@@ -1,7 +1,5 @@
 import torch
 
-from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
-
 class StarFlowTraining(torch.nn.Module):
     def __init__(self, starflow_diffeo, r=None, reg_param=1e-4, lr=1e-3):
         super(StarFlowTraining, self).__init__()

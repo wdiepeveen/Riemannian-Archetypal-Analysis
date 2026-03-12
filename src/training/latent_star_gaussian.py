@@ -1,6 +1,6 @@
 import torch
 
-from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
+from src.diffeomorphisms.vector.star import StarVectorDiffeomorphism
 from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
 from src.diffeomorphisms.identity import IdentityDiffeomorphism
 
@@ -14,9 +14,9 @@ class LatentStarGaussianTraining(torch.nn.Module):
 
     def psi(self, d):
         if d == self.star.d:
-            return StarGaussianVectorDiffeomorphism(d, self.star)
+            return StarVectorDiffeomorphism(d, self.star)
         else:
-            return ProductVectorDiffeomorphism([StarGaussianVectorDiffeomorphism(self.star.d, self.star), IdentityDiffeomorphism(d - self.star.d)])    
+            return ProductVectorDiffeomorphism([StarVectorDiffeomorphism(self.star.d, self.star), IdentityDiffeomorphism(d - self.star.d)])    
 
     def loss(self, x):
         phi_x = self.emb.forward(x).reshape(x.shape[0], -1)  # N x d

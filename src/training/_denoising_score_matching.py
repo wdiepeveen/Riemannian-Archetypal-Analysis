@@ -1,7 +1,5 @@
 import torch
 
-from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
-
 class DenoisingScoreMatchingTraining(torch.nn.Module):
     def __init__(self, starflow_diffeo, lr=1e-3):
         super(DenoisingScoreMatchingTraining, self).__init__()

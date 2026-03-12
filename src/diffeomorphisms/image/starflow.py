@@ -2,7 +2,7 @@ from torch.autograd.functional import jvp, vjp
 
 from src.diffeomorphisms.image import ImageDiffeomorphism
 from src.diffeomorphisms.image.transform import TransformImageDiffeomorphism
-from src.diffeomorphisms.image.star_gaussian import StarGaussianImageDiffeomorphism
+from src.diffeomorphisms.image.star import StarImageDiffeomorphism
         
 class StarFlowImageDiffeomorphism(ImageDiffeomorphism):
     def __init__(self, in_channels, height, width, starflow):
@@ -10,7 +10,7 @@ class StarFlowImageDiffeomorphism(ImageDiffeomorphism):
 
         self.starflow = starflow
         self.transform = TransformImageDiffeomorphism(self.C, self.H, self.W, starflow._transform, vector_output=True)
-        self.radial = StarGaussianImageDiffeomorphism(self.C, self.H, self.W, starflow._distribution)
+        self.radial = StarImageDiffeomorphism(self.C, self.H, self.W, starflow._distribution)
 
     def forward(self, x):
         """

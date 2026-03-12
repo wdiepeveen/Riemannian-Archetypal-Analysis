@@ -7,7 +7,7 @@ from src.diffeomorphisms.image.to_vec import ToVecImageDiffeomorphism
 from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
 from src.diffeomorphisms.vector.starflow import StarFlowVectorDiffeomorphism
 from src.diffeomorphisms.image.transform import TransformImageDiffeomorphism
-from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
+from src.diffeomorphisms.vector.star import StarVectorDiffeomorphism
 from src.diffeomorphisms.vector.to_img import ToImgVectorDiffeomorphism
 from src.distributions.product import ProductDistribution
 from src.distributions.starflows import StarFlowDistribution
@@ -24,7 +24,7 @@ class ProductStarFlowImageDiffeomorphism(ImageDiffeomorphism):
         self.radial = ImageCompositionDiffeomorphism(
             [
                 ToVecImageDiffeomorphism(self.C, self.H, self.W),
-                ProductVectorDiffeomorphism([StarGaussianVectorDiffeomorphism(self.starflow._distribution.distributions[0].d, self.starflow._distribution.distributions[0]), IdentityDiffeomorphism(self.d - self.starflow._distribution.distributions[0].d)]),
+                ProductVectorDiffeomorphism([StarVectorDiffeomorphism(self.starflow._distribution.distributions[0].d, self.starflow._distribution.distributions[0]), IdentityDiffeomorphism(self.d - self.starflow._distribution.distributions[0].d)]),
                 ToImgVectorDiffeomorphism(self.C, self.H, self.W),
             ], self.C, self.H, self.W
                                                      )

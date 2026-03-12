@@ -3,7 +3,7 @@ from torch.autograd.functional import jvp, vjp
 from src.diffeomorphisms.identity import IdentityDiffeomorphism
 from src.diffeomorphisms.vector import VectorDiffeomorphism
 from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
-from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
+from src.diffeomorphisms.vector.star import StarVectorDiffeomorphism
 from src.diffeomorphisms.vector.transform import TransformVectorDiffeomorphism
 from src.distributions.product import ProductDistribution
 from src.distributions.starflows import StarFlowDistribution
@@ -16,7 +16,7 @@ class StarFlowVectorDiffeomorphism(VectorDiffeomorphism):
 
         self.starflow = starflow_distribution
         self.transform = TransformVectorDiffeomorphism(self.d, self.starflow._transform)
-        self.radial = StarGaussianVectorDiffeomorphism(self.d, self.starflow._distribution)
+        self.radial = StarVectorDiffeomorphism(self.d, self.starflow._distribution)
 
     def forward(self, x):
         """

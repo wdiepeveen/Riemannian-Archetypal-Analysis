@@ -5,7 +5,7 @@ from src.diffeomorphisms.vector import VectorDiffeomorphism
 from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
 from src.diffeomorphisms.vector.starflow import StarFlowVectorDiffeomorphism
 from src.diffeomorphisms.vector.transform import TransformVectorDiffeomorphism
-from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
+from src.diffeomorphisms.vector.star import StarVectorDiffeomorphism
 from src.distributions.product import ProductDistribution
 from src.distributions.starflows import StarFlowDistribution
 from src.distributions.starflows.products.diagonal import StarDiagonalFlowDistribution
@@ -17,7 +17,7 @@ class ProductStarFlowVectorDiffeomorphism(VectorDiffeomorphism):
 
         self.starflow = product_starflow_distribution
         self.transform = TransformVectorDiffeomorphism(self.d, self.starflow._transform)
-        self.radial = ProductVectorDiffeomorphism([StarGaussianVectorDiffeomorphism(self.starflow._distribution.distributions[0].d, self.starflow._distribution.distributions[0]), IdentityDiffeomorphism(self.d - self.starflow._distribution.distributions[0].d)])
+        self.radial = ProductVectorDiffeomorphism([StarVectorDiffeomorphism(self.starflow._distribution.distributions[0].d, self.starflow._distribution.distributions[0]), IdentityDiffeomorphism(self.d - self.starflow._distribution.distributions[0].d)])
 
     def forward(self, x):
         """

@@ -1,7 +1,7 @@
-from src.distributions.star_gaussians import StarGaussianDistribution
+from src.distributions.stars import StarDistribution
 from src.radials.multimodal.ellipsoid.spd import MultiSPDEllipsoidRadial
 
-class MultiSPDEllipsoidGaussianDistribution(StarGaussianDistribution):
+class MultiSPDEllipsoidStarDistribution(StarDistribution):
     def __init__(self, d, Sigmas, signs, aggregation='sum'):
         super().__init__(d, MultiSPDEllipsoidRadial(d, Sigmas, signs, aggregation=aggregation))
         
@@ -9,6 +9,6 @@ class MultiSPDEllipsoidGaussianDistribution(StarGaussianDistribution):
         """
         Extract the idx-th mode of the multimodal star Gaussian distribution.
         :param idx: int
-        :return: StarGaussianDistribution with the same radial as the idx-th mode of the multimodal radial
+        :return: StarDistribution with the same radial as the idx-th mode of the multimodal radial
         """
-        return StarGaussianDistribution(self.d, self.radial.extract_mode(idx))
+        return StarDistribution(self.d, self.radial.extract_mode(idx))

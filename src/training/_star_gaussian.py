@@ -1,6 +1,6 @@
 import torch
 
-from src.diffeomorphisms.vector.star_gaussian import StarGaussianVectorDiffeomorphism
+from src.diffeomorphisms.vector.star import StarVectorDiffeomorphism
 
 class StarGaussianTraining(torch.nn.Module):
     def __init__(self, diffeo, star_gaussian, lr=1e-3):
@@ -13,7 +13,7 @@ class StarGaussianTraining(torch.nn.Module):
 
     @property
     def psi(self):
-        return StarGaussianVectorDiffeomorphism(self.phi.d, self.star)
+        return StarVectorDiffeomorphism(self.phi.d, self.star)
 
     def loss(self, x):
         phi_x = self.phi.forward(x).reshape(x.shape[0], -1)  # N x d

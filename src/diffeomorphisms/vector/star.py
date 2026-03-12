@@ -3,11 +3,11 @@ from torch.autograd.functional import jvp, vjp
 
 from src.diffeomorphisms.vector import VectorDiffeomorphism
 
-class StarGaussianVectorDiffeomorphism(VectorDiffeomorphism):
-    def __init__(self, d, star_gaussian_distribution):
+class StarVectorDiffeomorphism(VectorDiffeomorphism):
+    def __init__(self, d, star_distribution):
         super().__init__(d)
-        assert star_gaussian_distribution.d == d, "Distribution dimension must match diffeomorphism dimension."
-        self.rho = star_gaussian_distribution.radial
+        assert star_distribution.d == d, "Distribution dimension must match diffeomorphism dimension."
+        self.rho = star_distribution.radial
 
     def forward(self, x):
         """
