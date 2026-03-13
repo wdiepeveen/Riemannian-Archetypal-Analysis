@@ -3,9 +3,9 @@ import torch
 from src.radials.unimodal.elliposoid import EllipsoidRadial
 
 class OffCenteredEllipsoidRadial(EllipsoidRadial):
-    def __init__(self, mu, cov, c=4/3):
-        self.mu = mu
+    def __init__(self, cov, mu, c=4/3):
         self.cov = cov
+        self.mu = mu
         self.c = c
         super().__init__(d=cov.shape[0])
 

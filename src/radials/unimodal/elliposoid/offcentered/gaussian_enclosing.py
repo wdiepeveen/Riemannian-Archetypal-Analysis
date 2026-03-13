@@ -3,9 +3,9 @@ import torch
 from src.radials.unimodal.elliposoid.offcentered import OffCenteredEllipsoidRadial
 
 class GaussianEnclosingOffCenteredEllipsoidRadial(OffCenteredEllipsoidRadial):
-    def __init__(self, mu, cov, c=4/3, p=0.95):
+    def __init__(self, cov, mu, c=4/3, p=0.95):
         self.p = p
-        super().__init__(mu, cov, c=c)
+        super().__init__(cov, mu, c=c)
 
     def normal_quantile(self, eps=1e-10):
         """
