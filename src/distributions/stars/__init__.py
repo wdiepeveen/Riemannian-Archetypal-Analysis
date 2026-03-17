@@ -6,14 +6,14 @@ class StarDistribution(Distribution):
     r"""
     Star-Gaussian in R^d with density
 
-        p(x) = C * exp(-0.5 * (||x|| / rho(theta))^2),
+        p(x) = C * exp(-0.5 * (||x||^2 / rho(theta))^2),
 
     where x = r * theta, r > 0, theta = x / ||x||, and rho(theta) > 0 is trainable.
     The normalizing constant C is approximated by a differentiable MC integral
     over the sphere.
     """
 
-    def __init__(self, d, radial, n_mc_norm=2048, mcmc_steps=10, mcmc_step_size=0.1):
+    def __init__(self, d, radial, n_mc_norm=2048, mcmc_steps=2000, mcmc_step_size=0.1):
         super().__init__()
         self.d = d
         self.radial = radial
