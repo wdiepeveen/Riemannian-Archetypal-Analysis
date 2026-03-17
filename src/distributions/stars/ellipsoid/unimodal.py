@@ -3,9 +3,11 @@ from src.radials.unimodal.elliposoid.centered.ellipsoid_enclosing import Ellipso
 from src.radials.unimodal.elliposoid.centered.gaussian_enclosing import GaussianEnclosingCenteredEllipsoidRadial
 from src.radials.unimodal.elliposoid.offcentered.ellipsoid_enclosing import EllipsoidEnclosingOffCenteredEllipsoidRadial
 from src.radials.unimodal.elliposoid.offcentered.gaussian_enclosing import GaussianEnclosingOffCenteredEllipsoidRadial
+from src.radials.unimodal.trimmed_ellipsoid.ellipsoid_enclosing_offcentered import EllipsoidEnclosingOffCenteredTrimmedEllipsoidRadial
+from src.radials.unimodal.trimmed_ellipsoid.gaussian_enclosing_offcentered import GaussianEnclosingOffCenteredTrimmedEllipsoidRadial
 
 class UnimodalEllipsoidStarDistribution(StarDistribution):
-    def __init__(self, cov, mu=None, p=None):
+    def __init__(self, cov, mu=None, p=None, trimmed=False):
         if mu is None:
             if p is None:
                 radial = EllipsoidEnclosingCenteredEllipsoidRadial(cov)
@@ -13,8 +15,14 @@ class UnimodalEllipsoidStarDistribution(StarDistribution):
                 radial = GaussianEnclosingCenteredEllipsoidRadial(cov, p=p)
         else:
             if p is None:
-                radial = EllipsoidEnclosingOffCenteredEllipsoidRadial(cov, mu)
+                if not trimmed:
+                    radial = EllipsoidEnclosingOffCenteredEllipsoidRadial(cov, mu)
+                else:
+                    radial = EllipsoidEnclosingOffCenteredTrimmedEllipsoidRadial(cov, mu)
             else:
-                radial = GaussianEnclosingOffCenteredEllipsoidRadial(cov, mu, p=p)
+                if not trimmed:
+                    radial = GaussianEnclosingOffCenteredEllipsoidRadial(cov, mu, p=p)
+                else:
+                    radial = GaussianEnclosingOffCenteredTrimmedEllipsoidRadial(cov, mu, p=p)
         d = cov.shape[0]
         super().__init__(d, radial)

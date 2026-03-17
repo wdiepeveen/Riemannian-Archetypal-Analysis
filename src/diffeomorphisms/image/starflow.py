@@ -1,5 +1,3 @@
-from torch.autograd.functional import jvp, vjp
-
 from src.diffeomorphisms.image import ImageDiffeomorphism
 from src.diffeomorphisms.image.transform import TransformImageDiffeomorphism
 from src.diffeomorphisms.image.star import StarImageDiffeomorphism

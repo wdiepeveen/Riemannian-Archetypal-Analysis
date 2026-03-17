@@ -1,23 +1,33 @@
 from torch.autograd.functional import jvp, vjp
 
+from src.diffeomorphisms.composition.image import ImageCompositionDiffeomorphism
 from src.diffeomorphisms.identity import IdentityDiffeomorphism
-from src.diffeomorphisms.vector import VectorDiffeomorphism
+from src.diffeomorphisms.image import ImageDiffeomorphism
+from src.diffeomorphisms.image.to_vec import ToVecImageDiffeomorphism 
 from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
 from src.diffeomorphisms.vector.starflow import StarFlowVectorDiffeomorphism
-from src.diffeomorphisms.vector.transform import TransformVectorDiffeomorphism
+from src.diffeomorphisms.image.transform import TransformImageDiffeomorphism
 from src.diffeomorphisms.vector.star import StarVectorDiffeomorphism
-from src.distributions.product import ProductDistribution
+from src.diffeomorphisms.vector.to_img import ToImgVectorDiffeomorphism
+from distributions._product import ProductDistribution
 from src.distributions.starflows import StarFlowDistribution
-from src.distributions.starflows.products.diagonal import StarDiagonalFlowDistribution
+from src.distributions.starflows._products.diagonal import StarDiagonalFlowDistribution
         
-class ProductStarFlowVectorDiffeomorphism(VectorDiffeomorphism):
-    def __init__(self, d, product_starflow_distribution):
+class ProductStarFlowImageDiffeomorphism(ImageDiffeomorphism):
+    def __init__(self, in_channels, height, width, product_starflow_distribution):
+        d = in_channels * height * width
         assert d == product_starflow_distribution.d, "Dimension of diffeomorphism must match dimension of StarFlow distribution"
-        super().__init__(d)
+        super().__init__(in_channels, height, width)
 
         self.starflow = product_starflow_distribution
-        self.transform = TransformVectorDiffeomorphism(self.d, self.starflow._transform)
-        self.radial = ProductVectorDiffeomorphism([StarVectorDiffeomorphism(self.starflow._distribution.distributions[0].d, self.starflow._distribution.distributions[0]), IdentityDiffeomorphism(self.d - self.starflow._distribution.distributions[0].d)])
+        self.transform = TransformImageDiffeomorphism(self.C, self.H, self.W, self.starflow._transform, vector_output=True)
+        self.radial = ImageCompositionDiffeomorphism(
+            [
+                ToVecImageDiffeomorphism(self.C, self.H, self.W),
+                ProductVectorDiffeomorphism([StarVectorDiffeomorphism(self.starflow._distribution.distributions[0].d, self.starflow._distribution.distributions[0]), IdentityDiffeomorphism(self.d - self.starflow._distribution.distributions[0].d)]),
+                ToImgVectorDiffeomorphism(self.C, self.H, self.W),
+            ], self.C, self.H, self.W
+                                                     )
 
     def forward(self, x):
         """

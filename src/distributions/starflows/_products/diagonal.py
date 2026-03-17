@@ -1,5 +1,5 @@
-from src.distributions.diagonal_gaussian import DiagonalGaussian
-from src.distributions.starflows.products import ProductStarFlowDistribution
+from distributions._diagonal_gaussian import DiagonalGaussian
+from src.distributions.starflows._products import ProductStarFlowDistribution
 
 class StarDiagonalFlowDistribution(ProductStarFlowDistribution):
     def __init__(self, d, transform, star_gaussian_distribution):

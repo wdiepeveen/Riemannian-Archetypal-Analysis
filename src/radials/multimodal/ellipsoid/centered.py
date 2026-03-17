@@ -3,7 +3,7 @@ from src.radials.unimodal.elliposoid.centered.ellipsoid_enclosing import Ellipso
 from src.radials.unimodal.elliposoid.centered.gaussian_enclosing import GaussianEnclosingCenteredEllipsoidRadial
 
 class MultiCenteredEllipsoidRadial(MultiModalRadial):
-    def __init__(self, covs, p=None, aggregation='sum'):
+    def __init__(self, covs, p=None, aggregation='max'):
         if p is None:
             radials = [EllipsoidEnclosingCenteredEllipsoidRadial(cov) for cov in covs]
         else:

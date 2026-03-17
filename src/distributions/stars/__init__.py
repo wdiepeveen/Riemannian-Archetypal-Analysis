@@ -39,7 +39,7 @@ class StarDistribution(Distribution):
 
     # ---------- log normalizing constant (differentiable MC) ----------
 
-    def _log_normalizing_constant(self, ):
+    def _log_normalizing_constant(self):
         """
         Estimate log C where
 
@@ -91,7 +91,7 @@ class StarDistribution(Distribution):
         star_radius = r / (rho_theta + eps)           # (...)
         log_unnormalized = -0.5 * star_radius**2      # (...)
 
-        logC = self._log_normalizing_constant()       # scalar
+        logC = self._log_normalizing_constant().to(x.dtype)       # scalar
         return logC + log_unnormalized
 
     # ---------- sampling ----------

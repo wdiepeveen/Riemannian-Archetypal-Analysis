@@ -4,10 +4,12 @@ from torch.autograd.functional import jvp, vjp
 from src.diffeomorphisms.vector import VectorDiffeomorphism
 
 class StarVectorDiffeomorphism(VectorDiffeomorphism):
-    def __init__(self, d, star_distribution):
+    def __init__(self, d, star_distribution, s=1.0):
+        # assert s >= 1, "s must be greater than 1."
         super().__init__(d)
         assert star_distribution.d == d, "Distribution dimension must match diffeomorphism dimension."
         self.rho = star_distribution.radial
+        self.s = s
 
     def forward(self, x):
         """
@@ -26,7 +28,7 @@ class StarVectorDiffeomorphism(VectorDiffeomorphism):
             torch.zeros_like(x),
         )                                         
 
-        rho_theta = self.rho(theta)                   
+        rho_theta = self.rho(theta) ** self.s                   
 
         star_radius = r / (rho_theta + eps)        
         return theta * star_radius[..., None]  
@@ -48,7 +50,7 @@ class StarVectorDiffeomorphism(VectorDiffeomorphism):
             torch.zeros_like(y),
         )                                            
 
-        rho_theta = self.rho(theta)              
+        rho_theta = self.rho(theta) ** self.s              
 
         star_radius = r * (rho_theta + eps)        
         return theta * star_radius[..., None]  

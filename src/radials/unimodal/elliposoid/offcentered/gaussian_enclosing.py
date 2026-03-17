@@ -42,7 +42,7 @@ class GaussianEnclosingOffCenteredEllipsoidRadial(OffCenteredEllipsoidRadial):
     
     def construct_Sigma(self):
         r = self.gaussian_ellipsoid_radius_approx()
-        lambda_1 = torch.maximum(self.c ** 2 * self.mu.norm(2) ** 2, r ** 2 * torch.linalg.eigvals(self.cov).real.max())
+        lambda_1 = torch.maximum(self.c ** 2 * self.mu.norm(2) ** 2, r ** 2 * torch.einsum('i,ij,j->', self.mu, self.cov, self.mu) / torch.dot(self.mu, self.mu))
         mu_o_mu = torch.outer(self.mu, self.mu) / self.mu.norm(2) ** 2
         Sigma = lambda_1 * mu_o_mu + r ** 2 * (torch.eye(self.mu.shape[0]) - mu_o_mu) @ self.cov @ (torch.eye(self.mu.shape[0]) - mu_o_mu)
         return Sigma

@@ -1,22 +1,15 @@
-from torch.autograd.functional import jvp, vjp
-
-from src.diffeomorphisms.identity import IdentityDiffeomorphism
 from src.diffeomorphisms.vector import VectorDiffeomorphism
-from src.diffeomorphisms.vector.product import ProductVectorDiffeomorphism
 from src.diffeomorphisms.vector.star import StarVectorDiffeomorphism
 from src.diffeomorphisms.vector.transform import TransformVectorDiffeomorphism
-from src.distributions.product import ProductDistribution
-from src.distributions.starflows import StarFlowDistribution
-from src.distributions.starflows.products.diagonal import StarDiagonalFlowDistribution
         
 class StarFlowVectorDiffeomorphism(VectorDiffeomorphism):
-    def __init__(self, d, starflow_distribution):
+    def __init__(self, d, starflow_distribution, s=1.0):
         assert d == starflow_distribution.d, "Dimension of diffeomorphism must match dimension of StarFlow distribution"
         super().__init__(d)
 
         self.starflow = starflow_distribution
         self.transform = TransformVectorDiffeomorphism(self.d, self.starflow._transform)
-        self.radial = StarVectorDiffeomorphism(self.d, self.starflow._distribution)
+        self.radial = StarVectorDiffeomorphism(self.d, self.starflow._distribution, s=s)
 
     def forward(self, x):
         """

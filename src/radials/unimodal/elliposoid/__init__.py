@@ -14,8 +14,7 @@ class EllipsoidRadial(UniModalRadial):
         :param theta: N x d tensor
         :return: N tensor
         """
-        t = self.compute_intersect(theta)
-        return t
+        return self.compute_intersect(theta)
 
     def compute_intersect(self, theta):
         """

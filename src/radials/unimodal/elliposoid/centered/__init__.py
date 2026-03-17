@@ -12,7 +12,7 @@ class CenteredEllipsoidRadial(EllipsoidRadial):
         :param theta: N x d tensor
         :return: N tensor
         """
-        a = torch.einsum("ij,jk,ik->i", theta, self.Sigma_inv, theta)
+        a = torch.einsum("ij,jk,ik->i", theta, self.Sigma_inv.to(theta.dtype), theta)
         discriminant =  4 * a 
         assert (discriminant >= 0).all(), "discriminant must be non-negative"
         t = (torch.sqrt(discriminant)) / (2 * a)

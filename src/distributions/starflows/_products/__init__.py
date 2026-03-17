@@ -1,4 +1,4 @@
-from src.distributions.product import ProductDistribution
+from distributions._product import ProductDistribution
 from src.distributions.starflows import StarFlowDistribution
 
 class ProductStarFlowDistribution(StarFlowDistribution):
