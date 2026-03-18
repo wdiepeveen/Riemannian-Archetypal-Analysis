@@ -6,7 +6,7 @@ class TranslationImageTransform(ImageTransform):
         self.translation = translation
 
     def forward(self, inputs, context=None):
-        return inputs - self.translation[None], 0.0
+        return inputs - self.translation[None].to(inputs.device), 0.0
 
     def inverse(self, inputs, context=None):
-        return inputs + self.translation[None], 0.0
+        return inputs + self.translation[None].to(inputs.device), 0.0

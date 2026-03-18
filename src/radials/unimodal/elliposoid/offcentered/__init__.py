@@ -14,9 +14,9 @@ class OffCenteredEllipsoidRadial(EllipsoidRadial):
         :param theta: N x d tensor
         :return: N tensor
         """
-        a = torch.einsum("ij,jk,ik->i", theta, self.Sigma_inv.to(theta.dtype), theta)
-        b = -2 * torch.einsum("ij,jk,k->i", theta, self.Sigma_inv.to(theta.dtype), self.mu.to(theta.dtype))
-        c = torch.einsum("i,i->", self.mu.to(theta.dtype), self.Sigma_inv.to(theta.dtype) @ self.mu.to(theta.dtype)) - 1
+        a = torch.einsum("ij,jk,ik->i", theta, self.Sigma_inv.to(theta.dtype).to(theta.device), theta)
+        b = -2 * torch.einsum("ij,jk,k->i", theta, self.Sigma_inv.to(theta.dtype).to(theta.device), self.mu.to(theta.dtype).to(theta.device))
+        c = torch.einsum("i,i->", self.mu.to(theta.dtype).to(theta.device), self.Sigma_inv.to(theta.dtype).to(theta.device) @ self.mu.to(theta.dtype).to(theta.device)) - 1
         discriminant = b ** 2 - 4 * a * c
         assert (discriminant >= 0).all(), "discriminant must be non-negative"
         t = (-b + torch.sqrt(discriminant)) / (2 * a)
