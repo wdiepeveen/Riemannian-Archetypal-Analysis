@@ -5,7 +5,7 @@ from src.distributions.stars import StarDistribution
 from src.radials.unimodal.lq_norm import LqNormRadial
 
 class LqNormStarDistribution(StarDistribution):
-    def __init__(self, d, q: float, alpha: float = 1.0):
+    def __init__(self, d, q, alpha=1.0):
         radial = LqNormRadial(d, q, alpha)
         super().__init__(d, radial)
 

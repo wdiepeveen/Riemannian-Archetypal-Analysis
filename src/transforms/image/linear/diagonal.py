@@ -1,10 +1,10 @@
 import torch
 
-from src.transforms.vector.linear import LinearVectorTransform
+from src.transforms.image import ImageTransform
 
-class DiagonalLinearVectorTransform(LinearVectorTransform): 
-    def __init__(self, d, diagonal):
-        super().__init__(d)
+class DiagonalLinearImageTransform(ImageTransform):
+    def __init__(self, diagonal):
+        super().__init__(diagonal.shape[0], diagonal.shape[1], diagonal.shape[2])
         self.diagonal = diagonal
 
     def forward(self, x, context=None):
