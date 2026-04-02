@@ -1,5 +1,5 @@
 import torch
-from sklearn.cluster import KMeans
+from sklearn.mixture import GaussianMixture
 
 from src.distributions.starflows.recentered import RecenteredStarFlowDistribution
 from src.distributions.stars.ellipsoid.multimodal import MultiModalEllipsoidStarDistribution
@@ -11,7 +11,6 @@ class TrimmedEllipsoidStarFlowTraining(torch.nn.Module):
 
         self.d = torch.prod(torch.tensor(shape)).item()
         self.shape = shape
-        # self.N = shape[0]
 
         self.K = n_clusters
         
@@ -40,10 +39,11 @@ class TrimmedEllipsoidStarFlowTraining(torch.nn.Module):
         N = data.shape[0]
         assert list(data.shape[1:]) == self.shape, f"Data shape {list(data.shape[1:])} does not match expected shape {self.shape}"
 
-        # Step 1: K-means clustering
-        kmeans = KMeans(n_clusters=self.K, random_state=0).fit(data.reshape(N, -1).numpy())
-        cluster_labels = torch.from_numpy(kmeans.labels_).to(data.dtype)
-        cluster_centers_ = torch.from_numpy(kmeans.cluster_centers_).to(data.dtype)
+        # Step 1: Gaussian Mixture clustering
+        gmm = GaussianMixture(n_components=self.K, covariance_type='full', random_state=0)
+        gmm.fit(data.reshape(N, -1).numpy())
+        cluster_labels = torch.from_numpy(gmm.predict(data.reshape(N, -1).numpy())).to(data.dtype)
+        cluster_centers_ = torch.from_numpy(gmm.means_).to(data.dtype)
 
         # Step 2: Compute cluster covariances
         cluster_centers = []
