@@ -1,0 +1,22 @@
+experiments:
+  mnist_32:
+    data:
+      size: 32
+      batch_size: 128
+      mnist_mean: 0.1307
+      mnist_var: 0.3081
+      train_val_split: 0.8
+
+    nflow:
+      enabled: false
+      num_epochs: 50         
+      learning_rate: 1.0e-3
+      kernel_size: 3
+      hidden_channels: 64
+      n_flows: 3
+      n_scales: 3
+      checkpoint_subdir: "checkpoints_nflow"
+
+    starflow:
+      enabled: true
+      n_clusters: 100
