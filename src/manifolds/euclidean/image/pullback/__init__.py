@@ -72,7 +72,7 @@ class PullbackImageEuclidean(ImageEuclidean):
         phi_log = self.manifold.log(phi_x, phi_y)
 
         # Flatten batch for single call to differential phi inverse
-        return self.phi.differential_inverse(phi_x[:,:,None].repeat(1,1,L,1).reshape(-1, self.d),phi_log.reshape(-1, self.d)).reshape(N, M, L, C, H, W)
+        return self.phi.differential_inverse(phi_x[:,:,None].repeat(1,1,L,1).reshape(-1, C, H, W),phi_log.reshape(-1, C, H, W)).reshape(N, M, L, C, H, W)
 
     def exp(self, x, X): 
         """

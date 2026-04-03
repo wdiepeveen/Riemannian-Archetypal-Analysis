@@ -4,7 +4,7 @@ from sklearn.mixture import GaussianMixture
 from src.distributions.stars.ellipsoid.multimodal import MultiModalEllipsoidStarDistribution
 
 class StarTraining:
-    def __init__(self, shape, n_clusters, covariance_type='diag', c=4/3, p=0.95, cov_reg=1e-6):
+    def __init__(self, shape, n_clusters, covariance_type='diag', c=4/3, p=0.95, trimmed=False, cov_reg=1e-6):
         super(StarTraining, self).__init__()
 
         self.d = torch.prod(torch.tensor(shape)).item()
@@ -15,6 +15,7 @@ class StarTraining:
         
         self.c = c
         self.p = p
+        self.trimmed = trimmed
         self.cov_reg = cov_reg
 
     @property
@@ -68,6 +69,6 @@ class StarTraining:
         self.star = MultiModalEllipsoidStarDistribution(covs=self._cluster_covariances, 
                                                         mus=self._cluster_centers,
                                                         c=self.c, p=self.p, 
-                                                        trimmed=False, aggregation='softmax')
+                                                        trimmed=self.trimmed, aggregation='softmax')
 
         
