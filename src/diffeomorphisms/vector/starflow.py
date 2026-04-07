@@ -3,13 +3,13 @@ from src.diffeomorphisms.vector.star import StarVectorDiffeomorphism
 from src.diffeomorphisms.vector.transform import TransformVectorDiffeomorphism
         
 class StarFlowVectorDiffeomorphism(VectorDiffeomorphism):
-    def __init__(self, d, starflow_distribution, s=1.0):
+    def __init__(self, d, starflow_distribution):
         assert d == starflow_distribution.d, "Dimension of diffeomorphism must match dimension of StarFlow distribution"
         super().__init__(d)
 
         self.starflow = starflow_distribution
         self.transform = TransformVectorDiffeomorphism(self.d, self.starflow._transform)
-        self.radial = StarVectorDiffeomorphism(self.d, self.starflow._distribution, s=s)
+        self.radial = StarVectorDiffeomorphism(self.d, self.starflow._distribution)
 
     def forward(self, x):
         """
