@@ -3,11 +3,10 @@ from torch.autograd.functional import jvp, vjp
 
 from src.diffeomorphisms.vector import VectorDiffeomorphism
 
-class StarVectorDiffeomorphism(VectorDiffeomorphism):
-    def __init__(self, d, star_distribution):
+class ConcaveVectorDiffeomorphism(VectorDiffeomorphism):
+    def __init__(self, d, concave):
         super().__init__(d)
-        assert star_distribution.d == d, "Distribution dimension must match diffeomorphism dimension."
-        self.rho = star_distribution.radial
+        self.v = concave
 
     def forward(self, x):
         """
@@ -26,10 +25,8 @@ class StarVectorDiffeomorphism(VectorDiffeomorphism):
             torch.zeros_like(x),
         )                                         
 
-        rho_theta = self.rho(theta)                  
-
-        star_radius = r / (rho_theta + eps)        
-        return theta * star_radius[..., None]  
+        v_r = self.v(r)                          
+        return theta * v_r[..., None]  
     
     def inverse(self, y):
         """
@@ -48,11 +45,9 @@ class StarVectorDiffeomorphism(VectorDiffeomorphism):
             torch.zeros_like(y),
         )                                            
 
-        rho_theta = self.rho(theta)             
-
-        star_radius = r * (rho_theta + eps)        
-        return theta * star_radius[..., None]  
-
+        v_r = self.v.inverse(r)                          
+        return theta * v_r[..., None]
+    
     def differential_forward(self, x, X):
         # J_phi(x) @ X, with graph kept
         _, Y = jvp(
@@ -101,4 +96,4 @@ class StarVectorDiffeomorphism(VectorDiffeomorphism):
             strict=True,
         )
         is_zero = (y.norm(dim=-1, keepdim=True) == 0)
-        return torch.where(is_zero, Y, adj_y)    
+        return torch.where(is_zero, Y, adj_y)   
