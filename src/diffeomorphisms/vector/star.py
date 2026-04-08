@@ -16,17 +16,15 @@ class StarVectorDiffeomorphism(VectorDiffeomorphism):
         :param x: N x d
         :return: N x d
         """
-        eps = 1e-12
+        eps = 1e-6
         r = torch.linalg.norm(x, dim=-1)              
 
         # safe theta
-        theta = torch.where(
-            (r > eps)[..., None],
-            x / (r + eps)[..., None],
-            torch.zeros_like(x),
-        )                                         
-
-        rho_theta = self.rho(theta)                  
+        theta = torch.zeros_like(x)
+        theta[r > eps] = x[r > eps] / r[r > eps][..., None]                 
+        
+        rho_theta = torch.zeros_like(r)
+        rho_theta[r > eps] = self.rho(theta[r > eps])               
 
         star_radius = r / (rho_theta + eps)        
         return theta * star_radius[..., None]  
@@ -38,17 +36,15 @@ class StarVectorDiffeomorphism(VectorDiffeomorphism):
         :param y: N x d
         :return: N x d
         """
-        eps = 1e-12
+        eps = 1e-6
         r = torch.linalg.norm(y, dim=-1)         
 
         # safe theta
-        theta = torch.where(
-            (r > eps)[..., None],
-            y / (r + eps)[..., None],
-            torch.zeros_like(y),
-        )                                            
-
-        rho_theta = self.rho(theta)             
+        theta = torch.zeros_like(y)
+        theta[r > eps] = y[r > eps] / r[r > eps][..., None]                 
+        
+        rho_theta = torch.zeros_like(r)
+        rho_theta[r > eps] = self.rho(theta[r > eps])
 
         star_radius = r * (rho_theta + eps)        
         return theta * star_radius[..., None]  
