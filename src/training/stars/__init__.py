@@ -1,17 +1,17 @@
 import torch
-from sklearn.mixture import GaussianMixture
 
+from src.dimension_reduction.convex_simplex_structured_matrix_factorization import ConvexSimplexStructuredMatrixFactorizationSolver
 from src.distributions.stars.ellipsoid.multimodal import MultiModalEllipsoidStarDistribution
 
 class StarTraining:
-    def __init__(self, shape, n_clusters, covariance_type='diag', c=4/3, p=0.95, trimmed=False, cov_reg=1e-6):
+    def __init__(self, shape, n_clusters, n_max=-1, c=4/3, p=0.95, trimmed=False, cov_reg=1e-6):
         super(StarTraining, self).__init__()
 
         self.d = torch.prod(torch.tensor(shape)).item()
         self.shape = shape
 
         self.K = n_clusters
-        self.covariance_type = covariance_type
+        self.n_max = n_max
         
         self.c = c
         self.p = p
@@ -29,17 +29,22 @@ class StarTraining:
     @property
     def inv_cluster_covariances(self):
         return self._inv_cluster_covariances.reshape(-1, *self.shape, *self.shape)
+    
+    @property
+    def end_members(self):
+        return self._end_members.reshape(-1, *self.shape)
 
     def fit(self, data, labels=None):
         N = data.shape[0]
         assert list(data.shape[1:]) == self.shape, f"Data shape {list(data.shape[1:])} does not match expected shape {self.shape}"
 
-        # Step 1: Gaussian Mixture clustering
+        # Step 1: CSSMF clustering
         if labels is None:
-            gmm = GaussianMixture(n_components=self.K, covariance_type=self.covariance_type, random_state=0)
-            gmm.fit(data.reshape(N, -1).numpy())
-            labels = torch.from_numpy(gmm.predict(data.reshape(N, -1).numpy())).to(data.dtype)
-            # cluster_centers_ = torch.from_numpy(gmm.means_).to(data.dtype)
+            X = data.reshape(N, -1).T  # use the generated data as input
+            solver = ConvexSimplexStructuredMatrixFactorizationSolver(d=X.shape[0], N=X.shape[1])
+            solver.fit(X, r=self.K, n_max=self.n_max, max_iter=500)
+            self._end_members = solver.V.T
+            labels = solver.labels.cpu()
 
         # Step 2: Compute cluster covariances
         cluster_centers = []

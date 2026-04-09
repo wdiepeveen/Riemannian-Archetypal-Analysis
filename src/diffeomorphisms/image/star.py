@@ -3,11 +3,11 @@ from src.diffeomorphisms.image.to_vec import ToVecImageDiffeomorphism
 from src.diffeomorphisms.vector.star import StarVectorDiffeomorphism
 
 class StarImageDiffeomorphism(ImageDiffeomorphism):
-    def __init__(self, in_channels, height, width, star_distribution, s=1.):
+    def __init__(self, in_channels, height, width, star_distribution):
         super().__init__(in_channels, height, width)
         assert star_distribution.d == in_channels * height * width, "Distribution dimension must match diffeomorphism dimension."
 
-        self.star_vector_diffeo = StarVectorDiffeomorphism(self.d, star_distribution, s=s)
+        self.star_vector_diffeo = StarVectorDiffeomorphism(self.d, star_distribution)
         self.to_vec = ToVecImageDiffeomorphism(in_channels, height, width)
     
     def forward(self, x):

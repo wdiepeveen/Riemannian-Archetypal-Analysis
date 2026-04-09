@@ -1,11 +1,10 @@
 class DimensionReductionSolver:
-    """ Base class for dimension reduction of d-dimensional data Y = (Y_1, ..., Y_n)^T \in R^{n x d} """
-    def __init__(self, N, d, data) -> None:
-        self.N = N
+    """ Base class for dimension reduction of d-dimensional data X = (X_1, ..., X_n) \in R^{d x n} """
+    def __init__(self, d, N) -> None:
         self.d = d
-        self.data = data
+        self.N = N
 
-    def solve(self):
+    def fit(self, X):
         raise NotImplementedError(
             "Subclasses should implement this"
         )

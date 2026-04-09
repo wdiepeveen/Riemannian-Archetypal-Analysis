@@ -3,12 +3,12 @@ from src.diffeomorphisms.image.transform import TransformImageDiffeomorphism
 from src.diffeomorphisms.image.star import StarImageDiffeomorphism
         
 class StarFlowImageDiffeomorphism(ImageDiffeomorphism):
-    def __init__(self, in_channels, height, width, starflow, s=1.):
+    def __init__(self, in_channels, height, width, starflow):
         super().__init__(in_channels, height, width)
 
         self.starflow = starflow
         self.transform = TransformImageDiffeomorphism(self.C, self.H, self.W, starflow._transform, vector_output=True)
-        self.radial = StarImageDiffeomorphism(self.C, self.H, self.W, starflow._distribution, s=s)
+        self.radial = StarImageDiffeomorphism(self.C, self.H, self.W, starflow._distribution)
 
     def forward(self, x):
         """
