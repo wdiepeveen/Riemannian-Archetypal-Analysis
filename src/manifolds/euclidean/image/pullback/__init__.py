@@ -85,14 +85,14 @@ class PullbackImageEuclidean(ImageEuclidean):
         M = X.shape[1]
 
         # Flatten and map through phi
-        phi_x = self.phi.forward(x.reshape(-1, C, H, W))
+        phi_x = self.phi.forward(x.reshape(-1, C, H, W)).reshape(N, self.d)
         phi_X = self.phi.differential_forward((x[:, None].repeat(1, M, 1, 1, 1)).reshape(-1, C, H, W), X.reshape(-1, C, H, W)).reshape(N, M, self.d)
 
         # exp in phi-space
         phi_exp = self.manifold.exp(phi_x, phi_X)
 
         # Flatten batch for single call to phi inverse
-        return self.phi.inverse(phi_exp.reshape(-1, self.d)).reshape(N, M, C, H, W)
+        return self.phi.inverse(phi_exp.reshape(-1, self.C, self.H, self.W)).reshape(N, M, C, H, W)
     
     def distance(self, x, y):
         """

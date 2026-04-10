@@ -19,4 +19,4 @@ experiments:
 
     starflow:
       enabled: true
-      n_clusters: 100
+      n_clusters: 50
