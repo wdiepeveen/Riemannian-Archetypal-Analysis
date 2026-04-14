@@ -8,3 +8,8 @@ class DimensionReductionSolver:
         raise NotImplementedError(
             "Subclasses should implement this"
         )
+    
+    def predict(self, X):
+        raise NotImplementedError(
+            "Subclasses should implement this"
+        )

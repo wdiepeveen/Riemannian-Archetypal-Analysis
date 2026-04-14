@@ -16,7 +16,12 @@ class PullbackImageEuclidean(ImageEuclidean):
         :param weights: N x M
         :return: M x (C x H x W) 
         """
-        return self.phi.inverse(self.manifold.barycentre(self.phi.forward(x), weights=weights, tol=tol, max_iter=max_iter, step_size=step_size, red_coef=red_coef))
+        N = x.shape[0]
+        if weights is not None:
+            M = weights.shape[1]
+        else:
+            M = 1
+        return self.phi.inverse(self.manifold.barycentre(self.phi.forward(x).reshape(N, self.d), weights=weights, tol=tol, max_iter=max_iter, step_size=step_size, red_coef=red_coef).reshape(-1, self.C, self.H, self.W)).reshape(M, self.C, self.H, self.W)
 
     def inner(self, x, X, Y):
         """
@@ -26,11 +31,12 @@ class PullbackImageEuclidean(ImageEuclidean):
         :param Y: N x L x (C x H x W) 
         :return: N x M x L
         """
+        N = x.shape[0]
         M = X.shape[1]
         L = Y.shape[1]
-        return self.manifold.inner(self.phi.forward(x),
-                                   self.phi.differential_forward((x[:, None].repeat(1,M,1,1,1)).reshape(-1, self.C, self.H, self.W), X.reshape(-1, self.C, self.H, self.W)),
-                                   self.phi.differential_forward((x[:, None].repeat(1,L,1,1,1)).reshape(-1, self.C, self.H, self.W), Y.reshape(-1, self.C, self.H, self.W))
+        return self.manifold.inner(self.phi.forward(x).reshape(N, self.d),
+                                   self.phi.differential_forward((x[:, None].repeat(1,M,1,1,1)).reshape(-1, self.C, self.H, self.W), X.reshape(-1, self.C, self.H, self.W)).reshape(N, M, self.d),
+                                   self.phi.differential_forward((x[:, None].repeat(1,L,1,1,1)).reshape(-1, self.C, self.H, self.W), Y.reshape(-1, self.C, self.H, self.W)).reshape(N, L, self.d)
                                    )
 
     def geodesic(self, x, y, t): 

@@ -56,57 +56,12 @@ class ArchetypalAnalysisSolver(DimensionReductionSolver):
             # compute G for full data
             device = X.device
 
-            # initialize G based on V
-            XTV = X.T @ self.V
-            G = torch.softmax(XTV.T, dim=0)
-
-            G_prev = None
-            gradG_prev = None
-
-            fval_prev = self.objective_given_V(X, self.V, G).item()
-
-            for k in range(max_iter):
-                grad_G = self.gradient_G_given_V(X, self.V, G)
-                dir_G = self.zero_mean_cols(grad_G)
-
-                alpha_G = self.bb_step(G, dir_G, gradG_prev, G_prev,
-                                alpha_init=alpha_G_init,
-                                alpha_min=alpha_min,
-                                alpha_max=alpha_max)
-                
-                G_old = G.clone()
-                gradG_old = dir_G.clone()
-
-                cand_G = self.proj_simplex_cols(G - alpha_G * dir_G)
-                if backtracking:
-                    base_val = self.objective_given_V(X, self.V, G).item()
-                    a = alpha_G
-                    G_new = cand_G
-                    for _ in range(bt_max_steps):
-                        new_val = self.objective_given_V(X, self.V, G_new).item()
-                        if new_val <= base_val:
-                            break
-                        a *= bt_shrink
-                        G_new = self.proj_simplex_cols(G - a * dir_G)
-                    G = G_new
-                    alpha_G = a
-                else:
-                    G = cand_G
-
-                fval = self.objective_given_V(X, self.V, G).item()
-
-                rel = abs(fval_prev - fval) / max(1.0, abs(fval_prev))
-                if rel < tol:
-                    break
-
-                G_prev = G_old
-                gradG_prev = gradG_old
-                fval_prev = fval
+            G = self.predict(X, max_iter=max_iter, alpha_G_init=alpha_G_init, 
+                             alpha_min=alpha_min, alpha_max=alpha_max, backtracking=backtracking, 
+                             bt_shrink=bt_shrink, bt_max_steps=bt_max_steps, tol=tol)
 
             self.G = G
             self.labels = torch.argmax(G, dim=0)
-
-            print(f"Archetypal Analysis solver finished phase II after {k+1} iterations with objective value {fval:.4f} and relative change {rel:.2f}")
         else:
             device = X.device
 
@@ -203,7 +158,69 @@ class ArchetypalAnalysisSolver(DimensionReductionSolver):
                 
                 print(f"Archetypal Analysis solver finished after {k+1} iterations with objective value {fval:.4f} and relative change {rel:.2f}")
             else:
-                print(f"Archetypal Analysis solver finished phase I after {k+1} iterations with objective value {fval:.4f} and relative change {rel:.2f}")
+                print(f"Archetypal Analysis solver finished fitting phase after {k+1} iterations with objective value {fval:.4f} and relative change {rel:.2f}")
+
+    @torch.no_grad()
+    def predict(self,
+                X: torch.Tensor,
+                max_iter: int = 500,
+                alpha_G_init: float = 1.0,
+                alpha_min: float = 1e-8,
+                alpha_max: float = 1e3,
+                backtracking: bool = True,
+                bt_shrink: float = 0.5,
+                bt_max_steps: int = 20,
+                tol: float = 1e-6):
+        # initialize G based on V
+        XTV = X.T @ self.V
+        G = torch.softmax(XTV.T, dim=0)
+
+        G_prev = None
+        gradG_prev = None
+
+        fval_prev = self.objective_given_V(X, self.V, G).item()
+
+        for k in range(max_iter):
+            grad_G = self.gradient_G_given_V(X, self.V, G)
+            dir_G = self.zero_mean_cols(grad_G)
+
+            alpha_G = self.bb_step(G, dir_G, gradG_prev, G_prev,
+                            alpha_init=alpha_G_init,
+                            alpha_min=alpha_min,
+                            alpha_max=alpha_max)
+            
+            G_old = G.clone()
+            gradG_old = dir_G.clone()
+
+            cand_G = self.proj_simplex_cols(G - alpha_G * dir_G)
+            if backtracking:
+                base_val = self.objective_given_V(X, self.V, G).item()
+                a = alpha_G
+                G_new = cand_G
+                for _ in range(bt_max_steps):
+                    new_val = self.objective_given_V(X, self.V, G_new).item()
+                    if new_val <= base_val:
+                        break
+                    a *= bt_shrink
+                    G_new = self.proj_simplex_cols(G - a * dir_G)
+                G = G_new
+                alpha_G = a
+            else:
+                G = cand_G
+
+            fval = self.objective_given_V(X, self.V, G).item()
+
+            rel = abs(fval_prev - fval) / max(1.0, abs(fval_prev))
+            if rel < tol:
+                break
+
+            G_prev = G_old
+            gradG_prev = gradG_old
+            fval_prev = fval
+
+        print(f"Archetypal Analysis solver finished prediction phase after {k+1} iterations with objective value {fval:.4f} and relative change {rel:.2f}")
+
+        return G
 
     @torch.no_grad()
     def proj_simplex_cols(self, V: torch.Tensor, z: float = 1.0, eps: float = 1e-12) -> torch.Tensor:
