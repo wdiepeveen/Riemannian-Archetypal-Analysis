@@ -27,11 +27,12 @@ class Manifold:
             "Subclasses should implement this"
         )
         
-    def barycentre(self, x, tol=None, max_iter=None, step_size=None, red_coef=None):
+    def barycentre(self, x, weights=None, tol=None, max_iter=None, step_size=None, red_coef=None):
         """
 
         :param x: N x [Mpoint]
-        :return: [Mpoint]
+        :param weights: N x M
+        :return: M x [Mpoint]
         """
         raise NotImplementedError(
             "Subclasses should implement this"

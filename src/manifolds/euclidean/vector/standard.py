@@ -27,13 +27,17 @@ class StandardVectorEuclidean(VectorEuclidean):
         """
         return torch.einsum("NMi,NMi->NM", X, X).sqrt()
 
-    def barycentre(self, x, tol=None, max_iter=None, step_size=None, red_coef=None):
+    def barycentre(self, x, weights=None, tol=None, max_iter=None, step_size=None, red_coef=None):
         """
 
         :param x: N x d
-        :return: d
+        :param weights: N x M
+        :return: M x d
         """
-        return torch.mean(x, 0)
+        if weights is None:
+            return torch.mean(x, 0)[None]
+        else:
+            return torch.sum(x[:,None] * weights[:,:,None], 0) / torch.sum(weights, 0)[:, None]
     
     def geodesic(self, x, y, t):
         """

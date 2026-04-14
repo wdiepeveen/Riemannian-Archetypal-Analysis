@@ -28,13 +28,14 @@ class StandardImageEuclidean(ImageEuclidean):
         """
         return self.image_from_vector_euclidean.norm(x, X)
 
-    def barycentre(self, x, tol=None, max_iter=None, step_size=None, red_coef=None):
+    def barycentre(self, x, weights=None, tol=None, max_iter=None, step_size=None, red_coef=None):
         """
 
         :param x: N x (C x H x W)
-        :return: (C x H x W)
+        :param weights: N x M
+        :return: M x (C x H x W)
         """
-        return self.image_from_vector_euclidean.barycentre(x, tol=tol, max_iter=max_iter, step_size=step_size, red_coef=red_coef)
+        return self.image_from_vector_euclidean.barycentre(x, weights=weights, tol=tol, max_iter=max_iter, step_size=step_size, red_coef=red_coef)
     
     def geodesic(self, x, y, t):
         """

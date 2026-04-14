@@ -39,14 +39,19 @@ class ImageFromVectorEuclidean(Euclidean):
             X.reshape(N, M, self.C * self.H * self.W)
             )
 
-    def barycentre(self, x, tol=None, max_iter=None, step_size=None, red_coef=None):
+    def barycentre(self, x, weights=None, tol=None, max_iter=None, step_size=None, red_coef=None):
         """
 
         :param x: N x (C x H x W)
-        :return: (C x H x W)
+        :param weights: N x M
+        :return: M x (C x H x W)
         """
         N = x.shape[0]
-        return self.vector_euclidean.barycentre(x.reshape(N, self.C * self.H * self.W), tol=tol, max_iter=max_iter, step_size=step_size, red_coef=red_coef).reshape(self.C, self.H, self.W)
+        if weights is not None:
+            M = weights.shape[1]
+        else:
+            M = 1
+        return self.vector_euclidean.barycentre(x.reshape(N, self.C * self.H * self.W), weights=weights, tol=tol, max_iter=max_iter, step_size=step_size, red_coef=red_coef).reshape(M, self.C, self.H, self.W)
     
     def geodesic(self, x, y, t):
         """
@@ -122,5 +127,5 @@ class ImageFromVectorEuclidean(Euclidean):
             x.reshape(N, M, self.C * self.H * self.W),
             X.reshape(N, M, K, self.C * self.H * self.W),
             y.reshape(N, L, self.C * self.H * self.W)
-            ).reshape(N, N, L, K, self.C, self.H, self.W)
+            ).reshape(N, M, L, K, self.C, self.H, self.W)
     

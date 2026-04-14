@@ -9,13 +9,14 @@ class PullbackVectorEuclidean(VectorEuclidean):
         self.phi = diffeomorphism 
         self.manifold = manifold
 
-    def barycentre(self, x, tol=None, max_iter=None, step_size=None, red_coef=None):
+    def barycentre(self, x, weights=None, tol=None, max_iter=None, step_size=None, red_coef=None):
         """
 
         :param x: N x d
-        :return: d
+        :param weights: N x M
+        :return: M x d
         """
-        return self.phi.inverse(self.manifold.barycentre(self.phi.forward(x), tol=tol, max_iter=max_iter, step_size=step_size, red_coef=red_coef)[None])[0]
+        return self.phi.inverse(self.manifold.barycentre(self.phi.forward(x), weights=weights, tol=tol, max_iter=max_iter, step_size=step_size, red_coef=red_coef))
 
     def inner(self, x, X, Y):
         """
