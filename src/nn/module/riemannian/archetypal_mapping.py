@@ -1,6 +1,8 @@
 import torch
 
-from src.dimension_reduction.archetypal_analysis import ArchetypalAnalysisSolver
+from archetypes import AA
+
+# from src.dimension_reduction.archetypal_analysis import ArchetypalAnalysisSolver
 
 class RiemannianArchetypalMapping(torch.nn.Module):
     def __init__(self, Omega_manifold, archetypes):
@@ -30,7 +32,19 @@ class RiemannianArchetypalMapping(torch.nn.Module):
         :return: (n, r) tensor of weights for the archetypes
         """
         log_x = self.Omega_manifold.log(self.barycentre_archetype[None], x[None])[0,0].reshape(x.shape[0], -1)
-        aa_solver = ArchetypalAnalysisSolver(log_x.shape[1], log_x.shape[0])
-        aa_solver.V = self.log_archetypes.T
-        w_x = aa_solver.predict(log_x.T).T
+        aa = AA(self.r, init='furthest_sum')
+        aa.fit(log_x)
+        w_x = aa.predict(log_x.T).T
         return w_x
+    
+    # def w(self, x):
+    #     """
+        
+    #     :param x: (n, d) tensor of points to project
+    #     :return: (n, r) tensor of weights for the archetypes
+    #     """
+    #     log_x = self.Omega_manifold.log(self.barycentre_archetype[None], x[None])[0,0].reshape(x.shape[0], -1)
+    #     aa_solver = ArchetypalAnalysisSolver(log_x.shape[1], log_x.shape[0])
+    #     aa_solver.V = self.log_archetypes.T
+    #     w_x = aa_solver.predict(log_x.T).T
+    #     return w_x

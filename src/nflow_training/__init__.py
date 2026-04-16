@@ -1,8 +1,7 @@
 import torch
 
-class NFlowTraining(torch.nn.Module):
+class NFlowTraining:
     def __init__(self, nflow_distribution, lr=1e-3):
-        super(NFlowTraining, self).__init__()
         self.nflow = nflow_distribution
         
         self.optimizer = torch.optim.Adam(self.nflow.parameters(), lr=lr)

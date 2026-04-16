@@ -1,118 +1,69 @@
+import archetypes
 import torch
+from archetypes import AA
 
 from src.distributions.stars.ellipsoid.multimodal import MultiModalEllipsoidStarDistribution
 
 class StarConstruction:
-    def __init__(self, shape, c=4/3, p=0.95, trimmed=False, cov_reg=1e-6):
-        super(StarConstruction, self).__init__()
+    def __init__(self, n_clusters=None, c=4/3, p=0.95, trimmed=False, cov_reg=1e-6, n_archetypes=None):
+        assert n_clusters > 0, "Number of clusters must be positive."
+        assert n_archetypes > 0, "Number of archetypes must be positive."
 
-        self.d = torch.prod(torch.tensor(shape)).item()
-        self.shape = shape
-
-        self.k = 0
-        self.labels = []
+        self.n_clusters = n_clusters
         
         self.c = c
         self.p = p
         self.trimmed = trimmed
         self.cov_reg = cov_reg
 
-    @property
-    def cluster_centers(self):
-        return self._cluster_centers.reshape(-1, *self.shape)
+        self.n_archetypes = n_archetypes
     
-    @property
-    def cluster_end_members(self):
-        return self._cluster_end_members.reshape(-1, *self.shape)
-    
-    @property
-    def cluster_covariances(self):
-        return self._cluster_covariances.reshape(-1, *self.shape, *self.shape)
-    
-    @property
-    def inv_cluster_covariances(self):
-        return self._inv_cluster_covariances.reshape(-1, *self.shape, *self.shape)
-    
-    def fit(self, data, labels, end_members=None, min_cluster_size=None):
-        N = data.shape[0]
-        if min_cluster_size is None:
-            min_cluster_size = self.d + 1  # minimum size to compute covariance
-        assert list(data.shape[1:]) == self.shape, f"Data shape {list(data.shape[1:])} does not match expected shape {self.shape}"
+    def fit(self, data, labels=None):
+        """
+        
+        :param data: N x d tensor
+        """
+        if labels is not None:
+            assert len(labels) == data.shape[0], "Number of labels must match number of data points."
+            assert len(torch.unique(labels)) <= self.n_clusters, "Number of unique labels must be less than or equal to n_clusters."
+        else:
+            # do classification based on Archetypal Analysis -- TODO remove because this has to be done on the log space of the barycentre of the archetypes
+            aa = AA(self.n_clusters, init='furthest_sum')
+            aa.fit(data)
+            labels = torch.tensor(aa.labels_)
 
-        # compute cluster covariances
+        # construct the star distribution and archetypes for each cluster + compute the end members of the star distribution for each cluster
+        unique_clusters = torch.unique(labels)
         cluster_centers = []
-        cluster_end_members = []
         cluster_covariances = []
-        cluster_sizes = []
-        for k in range(labels.max().item() + 1):
-            cluster_data = data.reshape(N, -1)[labels == k]
-            if cluster_data.shape[0] < min_cluster_size:
-                print(f"Cluster {k} has size {cluster_data.shape[0]} which is less than minimum cluster size {min_cluster_size}. Skipping this cluster.")
-            else:
-                if end_members is not None:
-                    cluster_end_member = end_members[k].flatten()
-                    cluster_mu = cluster_end_member/2
-                else:
-                    cluster_mu = cluster_data.mean(dim=0)
-                    cluster_end_member = 2 * cluster_mu 
+        archetyepes = []
+        for label in unique_clusters:
+            cluster_data = data[labels == label]
+            cluster_size = cluster_data.shape[0]
+            
+            # star components for the cluster
+            cluster_center = cluster_data.mean(dim=0)
+            cluster_covariance = torch.einsum("ij,ik->jk", cluster_data - cluster_center, cluster_data - cluster_center) / cluster_size  + self.cov_reg * torch.eye(cluster_data.shape[1])
+            
+            cluster_centers.append(cluster_center)
+            cluster_covariances.append(cluster_covariance)
 
-                cluster_size = cluster_data.shape[0]
-                cluster_sizes.append(cluster_size)
+            # archetypes for the cluster -- TODO this should be done on the log space of the barycentre of the archetypes
+            aa_label = AA(self.n_archetypes+1, init='furthest_sum')
+            aa_label.fit(cluster_data)
+            cluster_archetypes = torch.from_numpy(aa_label.archetypes_)
+            norms = torch.norm(cluster_archetypes, dim=1)
+            _, idx_top = torch.topk(norms, k=self.n_archetypes, largest=True)
+            cluster_archetypes = cluster_archetypes[idx_top]
+            archetyepes.append(cluster_archetypes)
 
-                cluster_end_members.append(cluster_end_member)
-                cluster_centers.append(cluster_mu)
-
-                cluster_cov = torch.einsum("ij,ik->jk", cluster_data - cluster_mu, cluster_data - cluster_mu) / cluster_size + self.cov_reg * torch.eye(self.d, dtype=data.dtype)  # regularize covariance
-                cluster_covariances.append(cluster_cov)
-                
-                self.labels.append(k)
-                self.k += 1
-
-        self._cluster_centers = torch.stack(cluster_centers)
-        self._cluster_end_members = torch.stack(cluster_end_members)
-        self._cluster_covariances = torch.stack(cluster_covariances)
-        self.cluster_sizes = torch.tensor(cluster_sizes, dtype=data.dtype)
-        self._inv_cluster_covariances = torch.cat([torch.linalg.inv(cov)[None] for cov in self._cluster_covariances], dim=0)
-
-        # construct starflow distribution
-        self.star = MultiModalEllipsoidStarDistribution(covs=self._cluster_covariances, 
-                                                        mus=self._cluster_centers,
+        # construct the joint star distribution from the clusters
+        self.cluster_centers = torch.stack(cluster_centers)
+        self.cluster_covariances = torch.stack(cluster_covariances)
+        self.star = MultiModalEllipsoidStarDistribution(covs=self.cluster_covariances, 
+                                                        mus=self.cluster_centers,
                                                         c=self.c, p=self.p, 
                                                         trimmed=self.trimmed, aggregation='softmax')
 
-    # def fit(self, data, labels, min_cluster_size=None):
-    #     N = data.shape[0]
-    #     if min_cluster_size is None:
-    #         min_cluster_size = self.d + 1  # minimum size to compute covariance
-    #     assert list(data.shape[1:]) == self.shape, f"Data shape {list(data.shape[1:])} does not match expected shape {self.shape}"
-
-    #     # compute cluster covariances
-    #     cluster_centers = []
-    #     cluster_covariances = []
-    #     cluster_sizes = []
-    #     for k in range(labels.max().item() + 1):
-    #         cluster_data = data.reshape(N, -1)[labels == k]
-    #         cluster_size = cluster_data.shape[0]
-    #         if cluster_size >= min_cluster_size:  # ensure we have enough data points to compute covariance
-    #             cluster_sizes.append(cluster_size)
-
-    #             cluster_mu = cluster_data.mean(dim=0)
-    #             cluster_centers.append(cluster_mu)
-
-    #             cluster_cov = cluster_data.T.cov() + self.cov_reg * torch.eye(self.d, dtype=data.dtype)  # regularize covariance
-    #             cluster_covariances.append(cluster_cov)
-    #             self.k += 1
-    #             self.labels.append(k)
-
-    #     self._cluster_covariances = torch.stack(cluster_covariances)
-    #     self._cluster_centers = torch.stack(cluster_centers)
-    #     self.cluster_sizes = torch.tensor(cluster_sizes, dtype=data.dtype)
-    #     self._inv_cluster_covariances = torch.cat([torch.linalg.inv(cov)[None] for cov in self._cluster_covariances], dim=0)
-
-    #     # construct starflow distribution
-    #     self.star = MultiModalEllipsoidStarDistribution(covs=self._cluster_covariances, 
-    #                                                     mus=self._cluster_centers,
-    #                                                     c=self.c, p=self.p, 
-    #                                                     trimmed=self.trimmed, aggregation='softmax')
-
-        
+        # construct the joint archetypes from the cluster archetypes
+        self.archetypes = torch.cat(archetyepes, dim=0)
