@@ -4,7 +4,8 @@ from src.radials.unimodal.elliposoid.centered import CenteredEllipsoidRadial
 
 class EllipsoidEnclosingCenteredEllipsoidRadial(CenteredEllipsoidRadial):
     def __init__(self, cov):
-        super().__init__(cov)
+        self.cov = cov
+        super().__init__(cov.shape[0])
 
-    def construct_Sigma(self):
-        return self.cov
+    def construct_Sigma_inv(self):
+        return torch.linalg.inv(self.cov)

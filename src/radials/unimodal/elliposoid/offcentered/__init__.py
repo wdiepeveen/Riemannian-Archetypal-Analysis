@@ -3,11 +3,9 @@ import torch
 from src.radials.unimodal.elliposoid import EllipsoidRadial
 
 class OffCenteredEllipsoidRadial(EllipsoidRadial):
-    def __init__(self, cov, mu, c=4/3):
-        self.cov = cov
-        self.mu = mu
+    def __init__(self, d, c=4/3):
         self.c = c
-        super().__init__(d=cov.shape[0])
+        super().__init__(d)
 
     def compute_intersect(self, theta):
         """
@@ -23,5 +21,5 @@ class OffCenteredEllipsoidRadial(EllipsoidRadial):
         assert (t >= 0).all(), "t must be non-negative"
         return t
 
-    def construct_Sigma(self):
-        raise NotImplementedError("construct_Sigma must be implemented by subclasses")
+    def construct_Sigma_inv(self):
+        raise NotImplementedError("construct_Sigma_inv must be implemented by subclasses")

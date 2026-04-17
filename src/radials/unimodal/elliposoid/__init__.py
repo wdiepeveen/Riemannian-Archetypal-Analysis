@@ -6,8 +6,7 @@ class EllipsoidRadial(UniModalRadial):
     def __init__(self, d):
         super().__init__(d)
 
-        self.Sigma = self.construct_Sigma()
-        self.Sigma_inv = torch.linalg.inv(self.Sigma)
+        self.Sigma_inv = self.construct_Sigma_inv()
         
     def forward(self, theta):
         """
@@ -23,5 +22,5 @@ class EllipsoidRadial(UniModalRadial):
         """
         raise NotImplementedError("compute_intersect must be implemented by subclasses")
 
-    def construct_Sigma(self):
-        raise NotImplementedError("construct_Sigma must be implemented by subclasses")
+    def construct_Sigma_inv(self):
+        raise NotImplementedError("construct_Sigma_inv must be implemented by subclasses")

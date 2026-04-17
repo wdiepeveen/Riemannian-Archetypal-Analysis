@@ -4,8 +4,9 @@ from src.radials.unimodal.elliposoid.centered import CenteredEllipsoidRadial
 
 class GaussianEnclosingCenteredEllipsoidRadial(CenteredEllipsoidRadial):
     def __init__(self, cov, p=0.95):
+        self.cov = cov
         self.p = p
-        super().__init__(cov)
+        super().__init__(cov.shape[0])
 
     def normal_quantile(self, eps=1e-10):
         """
@@ -40,6 +41,6 @@ class GaussianEnclosingCenteredEllipsoidRadial(CenteredEllipsoidRadial):
         q = torch.clamp(q, min=0.0)
         return torch.sqrt(q)
     
-    def construct_Sigma(self):
+    def construct_Sigma_inv(self):
         r = self.gaussian_ellipsoid_radius_approx()
-        return r ** 2 * self.cov
+        return torch.linalg.inv(r ** 2 * self.cov)
