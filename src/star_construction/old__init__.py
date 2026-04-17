@@ -1,6 +1,6 @@
 import torch
 
-from src.distributions.stars.ellipsoid.multimodal import MultiModalEllipsoidStarDistribution
+from distributions.stars.ellipsoid.old_multimodal import MultiModalEllipsoidStarDistribution
 
 class StarConstruction:
     def __init__(self, shape, c=4/3, p=0.95, trimmed=False, cov_reg=1e-6):

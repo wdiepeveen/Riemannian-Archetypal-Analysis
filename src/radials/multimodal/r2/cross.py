@@ -1,7 +1,7 @@
 import torch
 
 from src.radials.multimodal import MultiModalRadial
-from src.radials.unimodal.elliposoid.centered.ellipsoid_enclosing import EllipsoidEnclosingCenteredEllipsoidRadial
+from src.radials.unimodal.centered_ellipsoid.ellipsoid_enclosing import EllipsoidEnclosingCenteredEllipsoidRadial
 
 class CrossRadial(MultiModalRadial):
     def __init__(self):

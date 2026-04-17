@@ -8,13 +8,20 @@ class RiemannianArchetypalMapping(torch.nn.Module):
     def __init__(self, Omega_manifold, archetypes):
         super().__init__()
         self.Omega_manifold = Omega_manifold
-        self.archetypes = archetypes
+        
         self.r = archetypes.shape[0]
 
         with torch.no_grad():
             self.barycentre_archetype = self.Omega_manifold.phi.inverse(torch.zeros_like(archetypes[0])[None])
             log_archetypes = self.Omega_manifold.log(self.barycentre_archetype[None], archetypes[None])[0,0].reshape(self.r, -1)
-            self.log_archetypes = log_archetypes 
+
+        self.aa = AA(self.r, init='furthest_sum')
+        self.aa.fit(log_archetypes.detach())
+
+        self.log_archetypes = torch.from_numpy(self.aa.archetypes_)
+
+        with torch.no_grad():
+            self.archetypes = self.Omega_manifold.exp(self.barycentre_archetype, self.log_archetypes[None])[0]
 
     def forward(self, x):
         """
@@ -32,9 +39,7 @@ class RiemannianArchetypalMapping(torch.nn.Module):
         :return: (n, r) tensor of weights for the archetypes
         """
         log_x = self.Omega_manifold.log(self.barycentre_archetype[None], x[None])[0,0].reshape(x.shape[0], -1)
-        aa = AA(self.r, init='furthest_sum')
-        aa.fit(log_x)
-        w_x = aa.predict(log_x.T).T
+        w_x = torch.from_numpy(self.aa.transform(log_x)).to(x.dtype)
         return w_x
     
     # def w(self, x):

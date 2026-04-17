@@ -1,13 +1,12 @@
 import torch
 
-from src.radials.unimodal.elliposoid.offcentered import OffCenteredEllipsoidRadial
+from radials.unimodal.centered_ellipsoid import CenteredEllipsoidRadial
 
-class GaussianEnclosingOffCenteredEllipsoidRadial(OffCenteredEllipsoidRadial):
-    def __init__(self, cov, mu, c=4/3, p=0.95):
+class GaussianEnclosingCenteredEllipsoidRadial(CenteredEllipsoidRadial):
+    def __init__(self, cov, p=0.95):
         self.cov = cov
-        self.mu = mu
         self.p = p
-        super().__init__(cov.shape[0], c=c)
+        super().__init__(cov.shape[0])
 
     def normal_quantile(self, eps=1e-10):
         """
@@ -44,7 +43,4 @@ class GaussianEnclosingOffCenteredEllipsoidRadial(OffCenteredEllipsoidRadial):
     
     def construct_Sigma_inv(self):
         r = self.gaussian_ellipsoid_radius_approx()
-        lambda_1 = torch.maximum(self.c ** 2 * self.mu.norm(2) ** 2, r ** 2 * torch.einsum('i,ij,j->', self.mu, self.cov, self.mu) / torch.dot(self.mu, self.mu))
-        mu_o_mu = torch.outer(self.mu, self.mu) / self.mu.norm(2) ** 2
-        Sigma = lambda_1 * mu_o_mu + r ** 2 * (torch.eye(self.mu.shape[0]) - mu_o_mu) @ self.cov @ (torch.eye(self.mu.shape[0]) - mu_o_mu)
-        return torch.linalg.inv(Sigma)
+        return torch.linalg.inv(r ** 2 * self.cov)

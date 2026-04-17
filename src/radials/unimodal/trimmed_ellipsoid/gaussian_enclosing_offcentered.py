@@ -1,7 +1,7 @@
 import torch
 
-from src.radials.unimodal.elliposoid.centered.ellipsoid_enclosing import EllipsoidEnclosingCenteredEllipsoidRadial
-from src.radials.unimodal.elliposoid.offcentered.gaussian_enclosing import GaussianEnclosingOffCenteredEllipsoidRadial
+from radials.unimodal.centered_ellipsoid.ellipsoid_enclosing import EllipsoidEnclosingCenteredEllipsoidRadial
+from radials.unimodal.offcentered_ellipsoid.gaussian_enclosing import GaussianEnclosingOffCenteredEllipsoidRadial
 from src.radials.unimodal.trimmed_ellipsoid import TrimmedEllipsoidRadial
 
 class GaussianEnclosingOffCenteredTrimmedEllipsoidRadial(TrimmedEllipsoidRadial):

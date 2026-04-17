@@ -2,7 +2,7 @@ import archetypes
 import torch
 from archetypes import AA
 
-from src.distributions.stars.ellipsoid.multimodal import MultiModalEllipsoidStarDistribution
+from src.distributions.stars.ellipsoid.old_multimodal import MultiModalEllipsoidStarDistribution
 
 class StarConstruction:
     def __init__(self, n_clusters=None, c=4/3, p=0.95, trimmed=False, cov_reg=1e-6, n_archetypes=None):
@@ -18,19 +18,19 @@ class StarConstruction:
 
         self.n_archetypes = n_archetypes
     
-    def fit(self, data, labels=None):
+    def fit(self, data, labels):
         """
         
         :param data: N x d tensor
+        :param labels: N list
         """
-        if labels is not None:
-            assert len(labels) == data.shape[0], "Number of labels must match number of data points."
-            assert len(torch.unique(labels)) <= self.n_clusters, "Number of unique labels must be less than or equal to n_clusters."
-        else:
-            # do classification based on Archetypal Analysis -- TODO remove because this has to be done on the log space of the barycentre of the archetypes
-            aa = AA(self.n_clusters, init='furthest_sum')
-            aa.fit(data)
-            labels = torch.tensor(aa.labels_)
+        assert len(labels) == data.shape[0], "Number of labels must match number of data points."
+        assert len(torch.unique(labels)) <= self.n_clusters, "Number of unique labels must be less than or equal to n_clusters."
+        # else:
+            # # do classification based on Archetypal Analysis -- TODO remove because this has to be done on the log space of the barycentre of the archetypes
+            # aa = AA(self.n_clusters, init='furthest_sum')
+            # aa.fit(data)
+            # labels = torch.tensor(aa.labels_)
 
         # construct the star distribution and archetypes for each cluster + compute the end members of the star distribution for each cluster
         unique_clusters = torch.unique(labels)

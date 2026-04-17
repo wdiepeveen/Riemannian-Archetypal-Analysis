@@ -1,17 +1,17 @@
 import torch
 
-from src.radials.unimodal.elliposoid.offcentered import OffCenteredEllipsoidRadial
+from src.radials.unimodal.offcentered_ellipsoid import OffCenteredEllipsoidRadial
 
 class DataEnclosingOffCenteredEllipsoidRadial(OffCenteredEllipsoidRadial):
-    def __init__(self, data, center, c=1., reg_param=1e-5):
-        self.mu = center
+    def __init__(self, data, center, c=1.1, reg_param=1e-2):
         self.m = data
+        self.mu = center
         self.reg_param = reg_param
 
         super().__init__(data.shape[1], c=c)
 
     def construct_Sigma_inv(self):
-        _U, _, _ = torch.linalg.svd((torch.eye(self.d) - torch.outer(self.mu, self.mu)/ torch.norm(self.mu)**2) @ torch.cat([self.m - self.mu[None]], dim=0).T)
+        _U, _, _ = torch.linalg.svd((torch.eye(self.d) - torch.outer(self.mu, self.mu)/ torch.norm(self.mu)**2) @ (self.m - self.mu[None]).T)
         r = min(self.m.shape[0], self.d-1)
         U = torch.cat([self.mu[:, None] / torch.norm(self.mu), (torch.eye(self.d) - torch.outer(self.mu, self.mu)/ torch.norm(self.mu)**2) @ _U[:, :r]], dim=1)
         sq_m_norms = ((self.m - self.mu[None]) @ U) ** 2

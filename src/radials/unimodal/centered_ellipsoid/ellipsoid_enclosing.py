@@ -1,6 +1,6 @@
 import torch
 
-from src.radials.unimodal.elliposoid.centered import CenteredEllipsoidRadial
+from src.radials.unimodal.centered_ellipsoid import CenteredEllipsoidRadial
 
 class EllipsoidEnclosingCenteredEllipsoidRadial(CenteredEllipsoidRadial):
     def __init__(self, cov):

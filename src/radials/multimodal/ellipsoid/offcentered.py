@@ -1,6 +1,6 @@
 from src.radials.multimodal import MultiModalRadial
-from src.radials.unimodal.elliposoid.offcentered.ellipsoid_enclosing import EllipsoidEnclosingOffCenteredEllipsoidRadial
-from src.radials.unimodal.elliposoid.offcentered.gaussian_enclosing import GaussianEnclosingOffCenteredEllipsoidRadial
+from radials.unimodal.offcentered_ellipsoid.ellipsoid_enclosing import EllipsoidEnclosingOffCenteredEllipsoidRadial
+from radials.unimodal.offcentered_ellipsoid.gaussian_enclosing import GaussianEnclosingOffCenteredEllipsoidRadial
 
 class MultiOffCenteredEllipsoidRadial(MultiModalRadial):
     def __init__(self, covs, mus, c=4/3, p=None, aggregation='max'):
