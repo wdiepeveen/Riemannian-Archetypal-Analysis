@@ -2,21 +2,13 @@ import archetypes
 import torch
 from archetypes import AA
 
-from src.distributions.stars.ellipsoid.old_multimodal import MultiModalEllipsoidStarDistribution
+from src.distributions.stars.ellipsoid.multimodal.data_enclosing import MultimodalDataEnclosingEllipsoidStarDistribution
 
 class StarConstruction:
-    def __init__(self, n_clusters=None, c=4/3, p=0.95, trimmed=False, cov_reg=1e-6, n_archetypes=None):
-        assert n_clusters > 0, "Number of clusters must be positive."
-        assert n_archetypes > 0, "Number of archetypes must be positive."
-
-        self.n_clusters = n_clusters
-        
+    def __init__(self, c=4/3, cov_reg=1e-2):
         self.c = c
-        self.p = p
-        self.trimmed = trimmed
         self.cov_reg = cov_reg
 
-        self.n_archetypes = n_archetypes
     
     def fit(self, data, labels):
         """
@@ -60,10 +52,8 @@ class StarConstruction:
         # construct the joint star distribution from the clusters
         self.cluster_centers = torch.stack(cluster_centers)
         self.cluster_covariances = torch.stack(cluster_covariances)
-        self.star = MultiModalEllipsoidStarDistribution(covs=self.cluster_covariances, 
-                                                        mus=self.cluster_centers,
-                                                        c=self.c, p=self.p, 
-                                                        trimmed=self.trimmed, aggregation='softmax')
-
+        self.star = MultimodalDataEnclosingEllipsoidStarDistribution(covs=self.cluster_covariances, 
+                                                                     mus=self.cluster_centers,
+                                                                     c=self.c)
         # construct the joint archetypes from the cluster archetypes
         self.archetypes = torch.cat(archetyepes, dim=0)
