@@ -1,75 +1,124 @@
 import torch
 
-from archetypes import AA
-
-# from src.dimension_reduction.archetypal_analysis import ArchetypalAnalysisSolver
 
 class RiemannianArchetypalMapping(torch.nn.Module):
-    def __init__(self, Omega_manifold, archetypes):
+    def __init__(
+        self,
+        Omega_manifold,
+        archetypes,
+        reg_lambda=0.0,
+        softmax_temperature=1.0,
+        pgd_max_iter=200,
+        pgd_tol=1e-6,
+        pgd_step=None,
+        accelerated=True,
+    ):
         super().__init__()
         self.Omega_manifold = Omega_manifold
-        
         self.archetypes = archetypes
         self.r = archetypes.shape[0]
 
-        with torch.no_grad():
-            self.barycentre_archetype = self.Omega_manifold.phi.inverse(torch.zeros_like(archetypes[0])[None])
-            self.log_archetypes = self.Omega_manifold.log(self.barycentre_archetype[None], archetypes[None])[0,0].reshape(self.r, -1)
+        self.reg_lambda = float(reg_lambda)
+        self.softmax_temperature = float(softmax_temperature)
+        self.pgd_max_iter = int(pgd_max_iter)
+        self.pgd_tol = float(pgd_tol)
+        self.accelerated = bool(accelerated)
 
-        self.aa = AA(self.r, init='furthest_sum')
-        self.aa.fit(self.log_archetypes.detach())
-        self.perm = self.find_perm(self.log_archetypes, torch.from_numpy(self.aa.archetypes_).to(self.log_archetypes.dtype))
+        with torch.no_grad():
+            Omega_archetypes = self.Omega_manifold.phi(self.archetypes).reshape(self.r, -1)  # (r, d)
+            self.register_buffer("Omega_archetypes", Omega_archetypes)   # (r, d)
+
+            A = Omega_archetypes.T.contiguous()                          # (d, r)
+            self.register_buffer("A", A)
+
+            G = A.T @ A                                                  # (r, r)
+            self.register_buffer("G", G)
+            self.register_buffer("twoG", 2.0 * G)
+
+            col_norm_sq = (A * A).sum(dim=0)                            # (r,)
+            self.register_buffer("col_norm_sq", col_norm_sq)
+
+            if pgd_step is None:
+                # L = 2 * ||A^T A||_2 = 2 * lambda_max(G)
+                evals = torch.linalg.eigvalsh(G)
+                L = 2.0 * torch.clamp(evals[-1], min=1e-12)
+                step = 1.0 / L
+            else:
+                step = float(pgd_step)
+
+            self.register_buffer("pgd_step_tensor", torch.tensor(step, dtype=A.dtype, device=A.device))
 
     def forward(self, x):
-        """
-        
-        :param x: (n, d) tensor of points to project
-        :return: (n, d) tensor of projected points
-        """
         weights = self.w(x).T
         return self.Omega_manifold.barycentre(self.archetypes, weights=weights)
 
+    @staticmethod
+    def _project_simplex(v):
+        # v: (..., r)
+        u, _ = torch.sort(v, dim=-1, descending=True)
+        cssv = torch.cumsum(u, dim=-1) - 1.0
+        j = torch.arange(1, v.shape[-1] + 1, device=v.device, dtype=v.dtype)
+        cond = u - cssv / j > 0
+        rho = cond.sum(dim=-1, keepdim=True).clamp(min=1)
+        theta = cssv.gather(-1, rho - 1) / rho
+        return torch.clamp(v - theta, min=0.0)
+
+    def _distance_softmax_bias(self, Y):
+        # Y: (batch, d)
+        y_norm_sq = (Y * Y).sum(dim=1, keepdim=True)                    # (batch, 1)
+        AtY = Y @ self.A                                                # (batch, r)
+        dist_sq = y_norm_sq + self.col_norm_sq.unsqueeze(0) - 2.0 * AtY
+        dist_sq = torch.clamp(dist_sq, min=0.0)
+        dist = torch.sqrt(dist_sq + 1e-12)
+        b = torch.softmax(self.softmax_temperature * dist, dim=-1)
+        return b, AtY
+
+    def _objective(self, X, AtY, Y_norm_sq, b):
+        # X: (batch, r)
+        quad = (X @ self.G * X).sum(dim=-1)
+        data = quad - 2.0 * (X * AtY).sum(dim=-1) + Y_norm_sq.squeeze(-1)
+        reg = self.reg_lambda * (X * b).sum(dim=-1)
+        return data + reg
+
     def w(self, x):
-        """
-        
-        :param x: (n, d) tensor of points to project
-        :return: (n, r) tensor of weights for the archetypes
-        """
-        log_x = self.Omega_manifold.log(self.barycentre_archetype[None], x[None])[0,0].reshape(x.shape[0], -1)
-        w_x = torch.from_numpy(self.aa.transform(log_x)).to(x.dtype)[:, self.perm]
-        return w_x
-    
-    def find_perm(self, X: torch.Tensor, Y: torch.Tensor) -> torch.Tensor:
-        """
-        Find permutation p such that X[i] ~= Y[p[i]] using cosine similarity.
-        Assumes Y is a unique permutation of (noisy) rows of X.
-        """
-        # Normalize rows to unit norm
-        Xn = torch.nn.functional.normalize(X, p=2, dim=1)
-        Yn = torch.nn.functional.normalize(Y, p=2, dim=1)
+        Y = self.Omega_manifold.phi(x).reshape(x.shape[0], -1)          # (batch, d)
+        batch = Y.shape[0]
 
-        # Similarity matrix: (n, n), sim[i, j] = <X_i, Y_j> / (||X_i|| ||Y_j||)
-        sim = Xn @ Yn.T   # normalized inner products
+        b, AtY = self._distance_softmax_bias(Y)
+        y_norm_sq = (Y * Y).sum(dim=1, keepdim=True)
 
-        n = X.size(0)
-        p = torch.empty(n, dtype=torch.long, device=X.device)
+        # good feasible init: simplex projection of bias toward closer archetypes
+        X = self._project_simplex(torch.softmax(-self.softmax_temperature * torch.sqrt(
+            torch.clamp(y_norm_sq + self.col_norm_sq.unsqueeze(0) - 2.0 * AtY, min=0.0) + 1e-12
+        ), dim=-1))
 
-        # Greedy 1-1 assignment
-        assigned_Y = torch.zeros(n, dtype=torch.bool, device=X.device)
-        assigned_X = torch.zeros(n, dtype=torch.bool, device=X.device)
+        step = self.pgd_step_tensor
+        if self.accelerated:
+            Z = X.clone()
+            t = torch.ones(batch, 1, device=X.device, dtype=X.dtype)
 
-        for _ in range(n):
-            # On each step, find the largest remaining similarity
-            sim_masked = sim.clone()
-            sim_masked[assigned_X] = -float("inf")
-            sim_masked[:, assigned_Y] = -float("inf")
+            for _ in range(self.pgd_max_iter):
+                grad = Z @ self.twoG - 2.0 * AtY + self.reg_lambda * b
+                X_next = self._project_simplex(Z - step * grad)
 
-            i, j = torch.nonzero(sim_masked == sim_masked.max(), as_tuple=True)
-            i = i[0]
-            j = j[0]
+                diff = torch.max(torch.abs(X_next - X))
+                if diff < self.pgd_tol:
+                    X = X_next
+                    break
 
-            p[i] = j
-            assigned_X[i] = True
-            assigned_Y[j] = True
+                t_next = 0.5 * (1.0 + torch.sqrt(1.0 + 4.0 * t * t))
+                Z = X_next + ((t - 1.0) / t_next) * (X_next - X)
 
-        return p
+                X = X_next
+                t = t_next
+        else:
+            for _ in range(self.pgd_max_iter):
+                grad = X @ self.twoG - 2.0 * AtY + self.reg_lambda * b
+                X_next = self._project_simplex(X - step * grad)
+
+                diff = torch.max(torch.abs(X_next - X))
+                X = X_next
+                if diff < self.pgd_tol:
+                    break
+
+        return X
