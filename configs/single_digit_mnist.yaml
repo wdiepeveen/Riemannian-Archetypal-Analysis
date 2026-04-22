@@ -17,4 +17,25 @@ nflow:
 
 starflow:
   enabled: true
-  n_archetypes: 10
+  reg_param: 
+    digit_1: 1.0e-3
+    digit_2: 1.0e-3
+    digit_3: 1.0e-3
+    digit_4: 1.0e-3
+    digit_5: 1.0e-3
+    digit_6: 1.0e-3
+    digit_7: 1.0e-3
+    digit_8: 1.0e-3
+    digit_9: 1.0e-3
+    digit_0: 1.0e-3
+  n_archetypes: 
+    digit_1: 10
+    digit_2: 20
+    digit_3: 20
+    digit_4: 20
+    digit_5: 20
+    digit_6: 20
+    digit_7: 20
+    digit_8: 20
+    digit_9: 20
+    digit_0: 20

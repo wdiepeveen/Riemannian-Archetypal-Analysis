@@ -13,9 +13,9 @@ class DataEnclosingCenteredEllipsoidRadial(CenteredEllipsoidRadial):
         super().__init__(data.shape[1])
 
     def construct_Sigma_inv(self):
-        _U, sig, _ = torch.linalg.svd((torch.eye(self.d) - torch.outer(self.mu, self.mu)/ torch.norm(self.mu)**2) @ self.m.T)
+        _U, sig, _ = torch.linalg.svd((torch.eye(self.d) - torch.outer(self.mu, self.mu) / torch.norm(self.mu)**2) @ self.m.T)
         # pick r to be the number of singular values above a threshold
-        r = (sig > self.reg_param).sum().item()
+        r = ((sig**2 / self.m.shape[0]) > self.reg_param).sum().item()
         U = torch.cat([self.mu[:, None] / torch.norm(self.mu), (torch.eye(self.d) - torch.outer(self.mu, self.mu)/ torch.norm(self.mu)**2) @ _U[:, :r]], dim=1)
         sq_m_norms = (self.m @ U) ** 2
         sq_mu_norm = ((self.mu[None]) @ U) ** 2
