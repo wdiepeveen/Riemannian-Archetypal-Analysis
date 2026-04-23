@@ -3,10 +3,16 @@ import torch
 from src.riemannian_neural_networks.archetypal_mappings import RiemannianArchetypalMapping
 
 class RelaxedRiemannianArchetypalMapping(RiemannianArchetypalMapping):
-    def __init__(self, euclidean_pullback_manifold, archetypes):
-        super().__init__(euclidean_pullback_manifold, archetypes)
+    def __init__(self, euclidean_pullback_manifold, archetypes, max_iter=200, tol=1e-6, accelerated=True):
+        super().__init__(euclidean_pullback_manifold, archetypes, max_iter=max_iter, tol=tol, accelerated=accelerated)
         self.phi = self.manifold.phi
         self.phi_m = self.phi(self.m) # (r, d)
+
+        # step size
+        G = self.phi_m @ self.phi_m.T
+        evals = torch.linalg.eigvalsh(G)
+        L = 2.0 * torch.clamp(evals[-1], min=1e-12)
+        self.step_size = 1.0 / L
     
     def archetype_weights_init(self, x):
         """
