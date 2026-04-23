@@ -4,16 +4,17 @@ from src.riemannian_neural_networks.archetypal_mappings import RiemannianArchety
 from src.riemannian_neural_networks.archetypal_mappings.relaxed import RelaxedRiemannianArchetypalMapping   
 
 class ExactRiemannianArchetypalMapping(RiemannianArchetypalMapping):
-    def __init__(self, euclidean_pullback_manifold, archetypes, init_euclidean_pullback_manifold=None, max_iter=200, tol=1e-6, accelerated=True, line_search=True, ls_beta=0.5, ls_c=1e-4, ls_max_iter=20):
+    def __init__(self, euclidean_pullback_manifold, archetypes, init_euclidean_pullback_manifold=None, max_iter=500, tol=1e-6, accelerated=True, line_search=True, ls_beta=0.5, ls_c=1e-4, ls_max_iter=20):
         super().__init__(euclidean_pullback_manifold, archetypes, max_iter=max_iter, tol=tol, accelerated=accelerated, line_search=line_search, ls_beta=ls_beta, ls_c=ls_c, ls_max_iter=ls_max_iter)
         self.phi = self.manifold.phi
         self.phi_m = self.phi(self.m) # (r, d)
         if init_euclidean_pullback_manifold is not None:
-            self.relaxed_ram = RelaxedRiemannianArchetypalMapping(init_euclidean_pullback_manifold, self.m, max_iter=self.max_iter, tol=self.tol, accelerated=self.accelerated) 
+            self.init_manifold = init_euclidean_pullback_manifold
+            self.relaxed_ram = RelaxedRiemannianArchetypalMapping(self.init_manifold, self.m, max_iter=self.max_iter, tol=self.tol, accelerated=self.accelerated) 
         else:
             self.relaxed_ram = RelaxedRiemannianArchetypalMapping(self.manifold, self.m, max_iter=self.max_iter, tol=self.tol, accelerated=self.accelerated)
 
-        self.step_size = self.relaxed_ram.step_size * 1e-2
+        self.initial_step_size = self.relaxed_ram.initial_step_size
     
     def archetype_weights_init(self, x):
         """

@@ -2,19 +2,19 @@ import torch
 
 from src.riemannian_neural_networks import RiemannianNeuralNetwork
 
-
 class RiemannianArchetypalMapping(RiemannianNeuralNetwork):
     def __init__(
         self,
         manifold,
         archetypes,
-        max_iter=200,
+        max_iter=500,
         tol=1e-6,
         accelerated=True,
         line_search=False,
         ls_beta=0.5,
         ls_c=1e-4,
         ls_max_iter=20,
+        ls_min_step=1e-12,
     ):
         super().__init__(manifold)
         self.m = archetypes
@@ -28,22 +28,23 @@ class RiemannianArchetypalMapping(RiemannianNeuralNetwork):
         self.ls_beta = ls_beta
         self.ls_c = ls_c
         self.ls_max_iter = ls_max_iter
+        self.ls_min_step = ls_min_step
 
         # Subclasses should set self.step_size.
         # We then cache it as the reference step and maintain a mutable working step.
-        self.step_size = None
+        # self.step_size = None
         self.initial_step_size = None
         self.current_step_size = None
 
     def _initialize_step_sizes(self):
-        if self.step_size is None:
-            raise ValueError(
-                "self.step_size must be set by the subclass before calling archetype_weights."
-            )
         if self.initial_step_size is None:
-            self.initial_step_size = self.step_size
+            raise ValueError(
+                "self.initial_step_size must be set by the subclass before calling archetype_weights."
+            )
+        # if self.initial_step_size is None:
+        #     self.initial_step_size = self.step_size
         if self.current_step_size is None:
-            self.current_step_size = self.step_size
+            self.current_step_size = self.initial_step_size
 
     def forward(self, x, return_weights=False):
         """
@@ -76,13 +77,17 @@ class RiemannianArchetypalMapping(RiemannianNeuralNetwork):
 
                 if self.line_search:
                     w_next, accepted_step = self._projected_backtracking(v, grad_v, x)
-                    print(f"Initial step size: {self.current_step_size:.4e}, Accepted step size: {accepted_step:.4e}")
+                    if accepted_step < self.ls_min_step:
+                        print(f"Iteration {_} Step size below minimum threshold. Stopping optimization.")
+                        w = w_next
+                        break
                 else:
                     accepted_step = self.current_step_size
                     w_next = self._project_simplex(v - accepted_step * grad_v)
 
                 diff = torch.max(torch.abs(w_next - w))
                 if diff < self.tol:
+                    print(f"Iteration {_} Convergence achieved with diff {diff:.2e}. Stopping optimization.")
                     w = w_next
                     break
 
@@ -114,6 +119,7 @@ class RiemannianArchetypalMapping(RiemannianNeuralNetwork):
                 diff = torch.max(torch.abs(w_next - w))
                 w = w_next
                 if diff < self.tol:
+                    print(f"Iteration {_} Convergence achieved with diff {diff:.2e}. Stopping optimization.")
                     break
 
         return w
