@@ -2,7 +2,7 @@ from src.radials.unimodal import UniModalRadial
 from src.radials.multimodal.intersected import IntersectedRadial
 
 class TrimmedEllipsoidRadial(UniModalRadial):
-    def __init__(self, d, ellipsoid_radial, trim_radial, aggregation='min'):
+    def __init__(self, d, ellipsoid_radial, trim_radial, aggregation='softmin'):
         super().__init__(d)
         self.ellipsoid_radial = ellipsoid_radial
         self.trim_radial = trim_radial

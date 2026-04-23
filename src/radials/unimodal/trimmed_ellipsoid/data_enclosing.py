@@ -3,7 +3,7 @@ from src.radials.unimodal.offcentered_ellipsoid.data_enclosing import DataEnclos
 from src.radials.unimodal.trimmed_ellipsoid import TrimmedEllipsoidRadial
 
 class DataEnclosingTrimmedEllipsoidRadial(TrimmedEllipsoidRadial):
-    def __init__(self, data, center, c=1.1, reg_param=1e-2, aggregation='min'):
+    def __init__(self, data, center, c=1.1, reg_param=1e-2, aggregation='softmin'):
         d = data.shape[1]
         ellipsoid_radial = DataEnclosingOffCenteredEllipsoidRadial(data, center, c=c, reg_param=reg_param)
         trim_radial = DataEnclosingCenteredEllipsoidRadial(data, center, c=c, reg_param=reg_param)

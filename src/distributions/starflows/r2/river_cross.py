@@ -5,5 +5,5 @@ from src.distributions.stars.r2.cross import CrossStarDistribution
 from src.transforms.vector.r2.river import RiverVectorTransform
 
 class RiverCrossStarFlowDistribution(StarFlowDistribution):
-    def __init__(self):
-        super(RiverCrossStarFlowDistribution, self).__init__(2, RiverVectorTransform(2.,0), CrossStarDistribution())
+    def __init__(self, aggregation='softmax'):
+        super(RiverCrossStarFlowDistribution, self).__init__(2, RiverVectorTransform(2.,0), CrossStarDistribution(aggregation=aggregation))

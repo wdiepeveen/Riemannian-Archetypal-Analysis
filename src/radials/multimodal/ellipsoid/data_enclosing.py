@@ -4,7 +4,7 @@ from src.radials.unimodal.trimmed_ellipsoid.data_enclosing import DataEnclosingT
 
 
 class MultiDataEnclosingEllipsoidRadial(MultiModalRadial):
-    def __init__(self, datas, centers, c=1.1, reg_param=1e-2, outer_aggregation='max', inner_aggregation='min'):
+    def __init__(self, datas, centers, c=1.1, reg_param=1e-2, outer_aggregation='softmax', inner_aggregation='softmin'):
         if inner_aggregation is None:
             radials = [DataEnclosingOffCenteredEllipsoidRadial(data, center, c=c, reg_param=reg_param) for data, center in zip(datas, centers)]
         else:

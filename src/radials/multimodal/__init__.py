@@ -3,7 +3,7 @@ import torch.nn as nn
 from src.radials import Radial
 
 class MultiModalRadial(Radial):
-    def __init__(self, d, radials, aggregation='max'):
+    def __init__(self, d, radials, aggregation='softmax'):
         super().__init__(d)
         assert all(radial.d == d for radial in radials), "All radials must have the same dimension as the multimodal radial"
         self.radials = nn.ModuleList(radials)
