@@ -8,7 +8,7 @@ class ExactRiemannianArchetypalMapping(RiemannianArchetypalMapping):
         super().__init__(euclidean_pullback_manifold, archetypes, max_iter=max_iter, tol=tol, accelerated=accelerated, line_search=line_search, ls_beta=ls_beta, ls_c=ls_c, ls_max_iter=ls_max_iter)
         self.phi = self.manifold.phi
         self.phi_m = self.phi(self.m) # (r, d)
-        self.init_manifold = init_euclidean_pullback_manifold
+        # self.init_manifold = init_euclidean_pullback_manifold
 
         # step size
         G = self.phi_m.reshape(self.r, self.d) @ self.phi_m.reshape(self.r, self.d).T
@@ -21,34 +21,43 @@ class ExactRiemannianArchetypalMapping(RiemannianArchetypalMapping):
         :param x: N x [input_dim] tensor
         :return: N x r tensor of archetypal coefficients
         """
-        if self.init_manifold is not None:
-            relaxed_ram = RelaxedRiemannianArchetypalMapping(self.init_manifold, self.m, max_iter=self.max_iter, tol=self.tol, accelerated=self.accelerated) 
-        else:
-            relaxed_ram = RelaxedRiemannianArchetypalMapping(self.manifold, self.m, max_iter=self.max_iter, tol=self.tol, accelerated=self.accelerated)
+        relaxed_ram = RelaxedRiemannianArchetypalMapping(self.manifold, self.m, max_iter=self.max_iter, tol=self.tol, accelerated=self.accelerated)
+        relaxed_weights = relaxed_ram.archetype_weights(x)
+        relaxed_weights_init = relaxed_ram.archetype_weights_init(x)
 
-        return relaxed_ram.archetype_weights_init(x)
-    
+        objective_values = self.objective(relaxed_weights, x)
+        objective_values_init = self.objective(relaxed_weights_init, x)
+        return torch.where((objective_values_init < objective_values).unsqueeze(-1), relaxed_weights_init, relaxed_weights)
+        
+        
     # def archetype_weights_init(self, x):
     #     """
     #     :param x: N x [input_dim] tensor
     #     :return: N x r tensor of archetypal coefficients
     #     """
-    #     N = x.shape[0]
-    #     phi_x = self.phi(x)  # (N, d)
-    #     pairwise_distances = torch.cdist(phi_x.reshape(N, self.d), self.phi_m.reshape(self.r, self.d))  # (N, r)
-    #     return torch.softmax(-pairwise_distances, dim=-1)
+    #     relaxed_ram = RelaxedRiemannianArchetypalMapping(self.manifold, self.m, max_iter=self.max_iter, tol=self.tol, accelerated=self.accelerated)
+    #     relaxed_weights = relaxed_ram.archetype_weights(x)
+    #     if self.init_manifold is not None:
+    #         relaxed_ram_init = RelaxedRiemannianArchetypalMapping(self.init_manifold, self.m, max_iter=self.max_iter, tol=self.tol, accelerated=self.accelerated) 
+    #         relaxed_weights_init = relaxed_ram.archetype_weights_init(x)
+
+    #         objective_values = self.objective(relaxed_weights, x)
+    #         objective_values_init = self.objective(relaxed_weights_init, x)
+    #         return torch.where((objective_values_init < objective_values).unsqueeze(-1), relaxed_weights_init, relaxed_weights)
+    #     else:
+    #         return relaxed_weights
     
     def objective(self, w, x):
         """
         Computes the objective function value for the given archetypal coefficients.
         :param w: N x r tensor of archetypal coefficients
         :param x: N x [input_dim] tensor
-        :return: scalar tensor representing the objective function value
+        :return: N  tensor representing the objective function value
         """
         N = x.shape[0]
         z = (w @ self.phi_m.reshape(self.r, self.d)).reshape(N, *x.shape[1:])
         x_hat = self.phi.inverse(z)
-        loss = ((x - x_hat) ** 2).sum()
+        loss = ((x - x_hat) ** 2).sum(dim=tuple(range(1, x.dim())))
         return loss
     
     def gradient(self, w, x):
@@ -60,7 +69,7 @@ class ExactRiemannianArchetypalMapping(RiemannianArchetypalMapping):
         """
         with torch.enable_grad():
             w_ = w.detach().clone().requires_grad_(True)
-            obj = (lambda w_local: self.objective(w_local, x))(w_)
+            obj = (lambda w_local: self.objective(w_local, x).sum())(w_)
             grad, = torch.autograd.grad(obj, w_, create_graph=True)
             return grad
     

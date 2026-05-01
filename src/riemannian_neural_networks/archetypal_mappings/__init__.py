@@ -95,8 +95,8 @@ class RiemannianArchetypalMapping(RiemannianNeuralNetwork):
                 v_next = w_next + ((t - 1.0) / t_next) * (w_next - w)
 
                 if self.line_search:
-                    f_w_next = self.objective(w_next, x)
-                    f_v_next = self.objective(v_next, x)
+                    f_w_next = self.objective(w_next, x).sum()
+                    f_v_next = self.objective(v_next, x).sum()
                     if f_v_next > f_w_next:
                         v_next = w_next
                         t_next = torch.ones_like(t)
@@ -136,7 +136,7 @@ class RiemannianArchetypalMapping(RiemannianNeuralNetwork):
         Computes the objective function value for the given archetypal coefficients.
         :param w: N x r tensor of archetypal coefficients
         :param x: N x [input_dim] tensor
-        :return: scalar tensor representing the objective function value
+        :return: N tensor representing the objective function value
         """
         raise NotImplementedError("Subclasses must implement objective method")
 
@@ -164,12 +164,12 @@ class RiemannianArchetypalMapping(RiemannianNeuralNetwork):
         :return: (accepted iterate, accepted step size)
         """
         alpha = self.current_step_size if self.current_step_size is not None else self.initial_step_size
-        f_w = self.objective(w, x)
+        f_w = self.objective(w, x).sum()
 
         w_trial = w
         for _ in range(self.ls_max_iter):
             w_trial = self._project_simplex(w - alpha * grad_w)
-            f_trial = self.objective(w_trial, x)
+            f_trial = self.objective(w_trial, x).sum()
 
             rhs = f_w + self.ls_c * torch.sum(grad_w * (w_trial - w))
             if f_trial <= rhs:
