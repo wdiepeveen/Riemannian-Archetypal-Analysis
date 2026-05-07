@@ -19,10 +19,11 @@ class RelaxedRiemannianArchetypalMapping(RiemannianArchetypalMapping):
         :param x: N x [input_dim] tensor
         :return: N x r tensor of archetypal coefficients
         """
-        N = x.shape[0]
-        phi_x = self.phi(x)  # (N, d)
-        pairwise_distances = torch.cdist(phi_x.reshape(N, self.d), self.phi_m.reshape(self.r, self.d))  # (N, r)
-        return torch.softmax(-pairwise_distances, dim=-1)
+        return torch.ones(x.shape[0], self.r) / self.r
+        # N = x.shape[0]
+        # phi_x = self.phi(x)  # (N, d)
+        # pairwise_distances = torch.cdist(phi_x.reshape(N, self.d), self.phi_m.reshape(self.r, self.d))  # (N, r)
+        # return torch.softmax(-pairwise_distances, dim=-1)
     
     def gradient(self, w, x):
         """
