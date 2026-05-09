@@ -4,7 +4,7 @@ from src.riemannian_neural_networks.archetypal_mappings import RiemannianArchety
 from src.riemannian_neural_networks.archetypal_mappings.relaxed import RelaxedRiemannianArchetypalMapping   
 
 class ExactRiemannianArchetypalMapping(RiemannianArchetypalMapping):
-    def __init__(self, euclidean_pullback_manifold, archetypes, init_euclidean_pullback_manifold=None, max_iter=500, tol=1e-6, accelerated=True, line_search=True, ls_beta=0.5, ls_c=1e-4, ls_max_iter=20):
+    def __init__(self, euclidean_pullback_manifold, archetypes, max_iter=500, tol=1e-3, accelerated=True, line_search=True, ls_beta=0.5, ls_c=1e-4, ls_max_iter=20):
         super().__init__(euclidean_pullback_manifold, archetypes, max_iter=max_iter, tol=tol, accelerated=accelerated, line_search=line_search, ls_beta=ls_beta, ls_c=ls_c, ls_max_iter=ls_max_iter)
         self.phi = self.manifold.phi
         self.phi_m = self.phi(self.m) # (r, d)
@@ -28,24 +28,6 @@ class ExactRiemannianArchetypalMapping(RiemannianArchetypalMapping):
         objective_values = self.objective(relaxed_weights, x)
         objective_values_init = self.objective(relaxed_weights_init, x)
         return torch.where((objective_values_init < objective_values).unsqueeze(-1), relaxed_weights_init, relaxed_weights)
-        
-        
-    # def archetype_weights_init(self, x):
-    #     """
-    #     :param x: N x [input_dim] tensor
-    #     :return: N x r tensor of archetypal coefficients
-    #     """
-    #     relaxed_ram = RelaxedRiemannianArchetypalMapping(self.manifold, self.m, max_iter=self.max_iter, tol=self.tol, accelerated=self.accelerated)
-    #     relaxed_weights = relaxed_ram.archetype_weights(x)
-    #     if self.init_manifold is not None:
-    #         relaxed_ram_init = RelaxedRiemannianArchetypalMapping(self.init_manifold, self.m, max_iter=self.max_iter, tol=self.tol, accelerated=self.accelerated) 
-    #         relaxed_weights_init = relaxed_ram.archetype_weights_init(x)
-
-    #         objective_values = self.objective(relaxed_weights, x)
-    #         objective_values_init = self.objective(relaxed_weights_init, x)
-    #         return torch.where((objective_values_init < objective_values).unsqueeze(-1), relaxed_weights_init, relaxed_weights)
-    #     else:
-    #         return relaxed_weights
     
     def objective(self, w, x):
         """

@@ -3,7 +3,7 @@ import torch
 from src.riemannian_neural_networks.archetypal_mappings import RiemannianArchetypalMapping
 
 class RelaxedRiemannianArchetypalMapping(RiemannianArchetypalMapping):
-    def __init__(self, euclidean_pullback_manifold, archetypes, max_iter=500, tol=1e-6, accelerated=True):
+    def __init__(self, euclidean_pullback_manifold, archetypes, max_iter=500, tol=1e-3, accelerated=True):
         super().__init__(euclidean_pullback_manifold, archetypes, max_iter=max_iter, tol=tol, accelerated=accelerated)
         self.phi = self.manifold.phi
         self.phi_m = self.phi(self.m) # (r, d)
@@ -20,10 +20,6 @@ class RelaxedRiemannianArchetypalMapping(RiemannianArchetypalMapping):
         :return: N x r tensor of archetypal coefficients
         """
         return torch.ones(x.shape[0], self.r) / self.r
-        # N = x.shape[0]
-        # phi_x = self.phi(x)  # (N, d)
-        # pairwise_distances = torch.cdist(phi_x.reshape(N, self.d), self.phi_m.reshape(self.r, self.d))  # (N, r)
-        # return torch.softmax(-pairwise_distances, dim=-1)
     
     def gradient(self, w, x):
         """
