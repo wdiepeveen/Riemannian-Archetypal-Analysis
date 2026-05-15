@@ -3,8 +3,7 @@ import torch
 from src.radials.unimodal import UniModalRadial
 
 class OffCenteredEllipsoidRadial(UniModalRadial):
-    def __init__(self, d, c=4/3):
-        self.c = c
+    def __init__(self, d):
         super().__init__(d)
         self.Sigma_inv = self.construct_Sigma_inv()
 
