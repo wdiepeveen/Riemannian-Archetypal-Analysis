@@ -46,26 +46,32 @@ class RiemannianArchetypalMapping(RiemannianNeuralNetwork):
         if self.current_step_size is None:
             self.current_step_size = self.initial_step_size
 
-    def forward(self, x, return_weights=False):
+    def forward(self, x, x0=None, return_weights=False):
         """
         Computes T(x) := argmin_{y} \sum_{j=1}^r g_j^* d(y, m^j)^2,
         where g^* are the archetype weights implemented by subclass.
         :param x: N x [input_dim] tensor
+        :param x0: Optional N x [input_dim] tensor for initializing archetype weights
         """
-        weights = self.archetype_weights(x)
+        weights = self.archetype_weights(x, x0=x0)
         barycentre = self.manifold.barycentre(self.m, weights=weights.T)
         if return_weights:
             return barycentre, weights
         return barycentre
 
-    def archetype_weights(self, x):
+    def archetype_weights(self, x, x0=None):
         """
         :param x: N x [input_dim] tensor
+        :param x0: Optional N x [input_dim] tensor for initializing archetype weights
         :return: N x r tensor of archetypal coefficients
         """
         self._initialize_step_sizes()
 
-        w = self.archetype_weights_init(x)
+        if x0 is not None:
+            print("Using provided x0 for archetype weight initialization.")
+            w = self.archetype_weights_init(x0)
+        else:
+            w = self.archetype_weights_init(x)
         N = x.shape[0]
 
         if self.accelerated:

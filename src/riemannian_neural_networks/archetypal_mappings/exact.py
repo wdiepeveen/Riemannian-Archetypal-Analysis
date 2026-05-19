@@ -8,7 +8,6 @@ class ExactRiemannianArchetypalMapping(RiemannianArchetypalMapping):
         super().__init__(euclidean_pullback_manifold, archetypes, max_iter=max_iter, tol=tol, accelerated=accelerated, line_search=line_search, ls_beta=ls_beta, ls_c=ls_c, ls_max_iter=ls_max_iter)
         self.phi = self.manifold.phi
         self.phi_m = self.phi(self.m) # (r, d)
-        # self.init_manifold = init_euclidean_pullback_manifold
 
         # step size
         G = self.phi_m.reshape(self.r, self.d) @ self.phi_m.reshape(self.r, self.d).T
