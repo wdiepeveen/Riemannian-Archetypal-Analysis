@@ -26,7 +26,7 @@ To produce the results in [1].
 * For the 2D toy example experiments run:
   *  `river_cross_starflow.ipynb`
 * For the 3D toy example experiments run:
-  *  `river_cross_starflow.ipynb`
+  *  `tree_multi_ellipsoid_star.ipynb`
 * For mnist experiments run:
-  *  `mnist_multi_ellipsoid_starflow.ipynb`
   *  `single_digit_mnist_multi_ellipsoid_starflow.ipynb`
+  *  `mnist_multi_ellipsoid_starflow.ipynb`
