@@ -1,1 +1,1 @@
-# Lyme-Geometry
+# Riemannian Archetypal Analysis
