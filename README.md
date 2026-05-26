@@ -2,7 +2,7 @@
 
     [1] W. Diepeveen, D. Needell.  
     Riemannian Archetypal Analysis: Interpretable non-linear data analysis on deformed star distributions.
-    arXiv preprint arXiv:xxxx.yyyy. 2026 MMM DD.
+    arXiv preprint arXiv:2605.24113. 2026 May 22.
 
 Setup
 -----
